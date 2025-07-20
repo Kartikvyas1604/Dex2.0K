@@ -19,9 +19,9 @@ interface BottomTabBarProps {
 
 const tabs: TabItem[] = [
   { key: 'home', title: 'Home', icon: 'home', screen: 'Home' },
+  { key: 'pairs', title: 'Pairs', icon: 'pairs', screen: 'Pools' },
+  { key: 'trading', title: 'Trading', icon: 'chart', screen: 'Trading' },
   { key: 'swap', title: 'Swap', icon: 'swap', screen: 'Swap' },
-  { key: 'create', title: 'Create', icon: 'create', screen: 'CreateToken' },
-  { key: 'pools', title: 'Pools', icon: 'pools', screen: 'Pools' },
   { key: 'profile', title: 'Profile', icon: 'profile', screen: 'Profile' },
 ];
 
@@ -45,7 +45,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPres
               
               <AppIcon
                 name={isActive ? `${tab.icon}-selected` : tab.icon}
-                size={24}
+                size={22}
                 color={isActive ? '#fff' : '#666'}
                 style={styles.tabIcon}
               />
@@ -70,20 +70,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 24,
+    paddingBottom: 16,
   },
   tabBar: {
     flexDirection: 'row',
     marginHorizontal: 20,
-    borderRadius: 24,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     backgroundColor: '#000',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowRadius: 12,
+    elevation: 8,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: 8,
+    borderRadius: 16,
     position: 'relative',
   },
   activeIndicator: {
@@ -101,17 +101,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 20,
+    borderRadius: 16,
     backgroundColor: '#fff',
     opacity: 0.1,
   },
   tabIcon: {
-    marginBottom: 6,
+    marginBottom: 4,
   },
   tabTitle: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#666',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     fontFamily: FONTS.semiBold,
     fontWeight: FONT_WEIGHTS.semiBold,
   },

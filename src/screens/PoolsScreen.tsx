@@ -1,258 +1,334 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList } from 'react-native';
 import { AppIcon } from '../components/AppIcon';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
-import { Button } from '../components/Button';
 import { TokenLogo } from '../components/TokenLogo';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 
 const { width } = Dimensions.get('window');
 
-interface Token {
-  symbol: string;
-  name: string;
-  logo: string;
-}
-
-interface Pool {
+interface TradingPair {
   id: string;
-  token1: Token;
-  token2: Token;
+  token0: {
+    symbol: string;
+    name: string;
+    logo: string;
+    address: string;
+  };
+  token1: {
+    symbol: string;
+    name: string;
+    logo: string;
+    address: string;
+  };
+  price: string;
+  priceChange24h: string;
+  priceChangePercent24h: string;
+  volume24h: string;
   liquidity: string;
-  apr: string;
-  share?: string;
-  value?: string;
-  change: string;
-  volume24h?: string;
-}
-
-interface PoolCardProps {
-  pool: Pool;
-  isMyPool?: boolean;
+  marketCap: string;
+  dexId: string;
+  pairAddress: string;
+  createdAt: string;
+  txns: {
+    h24: { buys: number; sells: number };
+    h6: { buys: number; sells: number };
+    h1: { buys: number; sells: number };
+  };
 }
 
 export const PoolsScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('my-pools');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedDex, setSelectedDex] = useState('all');
 
-  const myPools: Pool[] = [
+  const tradingPairs: TradingPair[] = [
     {
       id: '1',
-      token1: { symbol: 'SOL', name: 'Solana', logo: 'solana' },
-      token2: { symbol: 'USDC', name: 'USD Coin', logo: 'usdc' },
-      liquidity: '$12,450',
-      apr: '24.5%',
-      share: '0.12%',
-      value: '$1,234',
-      change: '+5.2%',
+      token0: { symbol: 'BONK', name: 'Bonk', logo: 'bonk', address: '0x1234...5678' },
+      token1: { symbol: 'SOL', name: 'Solana', logo: 'solana', address: '0x2345...6789' },
+      price: '$0.00001234',
+      priceChange24h: '+0.00000123',
+      priceChangePercent24h: '+11.08%',
+      volume24h: '$2,456,789',
+      liquidity: '$1,234,567',
+      marketCap: '$12,345,678',
+      dexId: 'raydium',
+      pairAddress: '0x3456...7890',
+      createdAt: '2024-01-15T10:30:00Z',
+      txns: {
+        h24: { buys: 1234, sells: 567 },
+        h6: { buys: 234, sells: 123 },
+        h1: { buys: 45, sells: 23 }
+      }
     },
     {
       id: '2',
-      token1: { symbol: 'RWA', name: 'RWA Token', logo: 'rwa' },
-      token2: { symbol: 'SOL', name: 'Solana', logo: 'solana' },
-      liquidity: '$8,920',
-      apr: '18.7%',
-      share: '0.08%',
-      value: '$567',
-      change: '-2.1%',
-    },
-  ];
-
-  const allPools: Pool[] = [
-    {
-      id: '1',
-      token1: { symbol: 'SOL', name: 'Solana', logo: 'solana' },
-      token2: { symbol: 'USDC', name: 'USD Coin', logo: 'usdc' },
-      liquidity: '$2.4M',
-      volume24h: '$156K',
-      apr: '24.5%',
-      change: '+5.2%',
-    },
-    {
-      id: '2',
-      token1: { symbol: 'RWA', name: 'RWA Token', logo: 'rwa' },
-      token2: { symbol: 'SOL', name: 'Solana', logo: 'solana' },
-      liquidity: '$890K',
-      volume24h: '$45K',
-      apr: '18.7%',
-      change: '-2.1%',
+      token0: { symbol: 'JUP', name: 'Jupiter', logo: 'jupiter', address: '0x4567...8901' },
+      token1: { symbol: 'SOL', name: 'Solana', logo: 'solana', address: '0x2345...6789' },
+      price: '$0.5678',
+      priceChange24h: '+0.0234',
+      priceChangePercent24h: '+4.31%',
+      volume24h: '$1,234,567',
+      liquidity: '$2,345,678',
+      marketCap: '$89,123,456',
+      dexId: 'raydium',
+      pairAddress: '0x5678...9012',
+      createdAt: '2024-01-10T15:45:00Z',
+      txns: {
+        h24: { buys: 2345, sells: 1234 },
+        h6: { buys: 456, sells: 234 },
+        h1: { buys: 89, sells: 45 }
+      }
     },
     {
       id: '3',
-      token1: { symbol: 'ENT', name: 'Enterprise Coin', logo: 'ent' },
-      token2: { symbol: 'USDC', name: 'USD Coin', logo: 'usdc' },
-      liquidity: '$567K',
-      volume24h: '$23K',
-      apr: '15.3%',
-      change: '+8.9%',
+      token0: { symbol: 'RAY', name: 'Raydium', logo: 'raydium', address: '0x6789...0123' },
+      token1: { symbol: 'SOL', name: 'Solana', logo: 'solana', address: '0x2345...6789' },
+      price: '$1.2345',
+      priceChange24h: '-0.0567',
+      priceChangePercent24h: '-4.39%',
+      volume24h: '$3,456,789',
+      liquidity: '$4,567,890',
+      marketCap: '$234,567,890',
+      dexId: 'orca',
+      pairAddress: '0x7890...1234',
+      createdAt: '2024-01-05T09:15:00Z',
+      txns: {
+        h24: { buys: 3456, sells: 2345 },
+        h6: { buys: 678, sells: 456 },
+        h1: { buys: 123, sells: 78 }
+      }
     },
+    {
+      id: '4',
+      token0: { symbol: 'ORCA', name: 'Orca', logo: 'orca', address: '0x8901...2345' },
+      token1: { symbol: 'SOL', name: 'Solana', logo: 'solana', address: '0x2345...6789' },
+      price: '$3.4567',
+      priceChange24h: '+0.0723',
+      priceChangePercent24h: '+2.15%',
+      volume24h: '$987,654',
+      liquidity: '$1,567,890',
+      marketCap: '$156,789,012',
+      dexId: 'orca',
+      pairAddress: '0x9012...3456',
+      createdAt: '2024-01-12T14:20:00Z',
+      txns: {
+        h24: { buys: 987, sells: 654 },
+        h6: { buys: 234, sells: 123 },
+        h1: { buys: 45, sells: 23 }
+      }
+    }
   ];
 
-  const PoolCard: React.FC<PoolCardProps> = ({ pool, isMyPool = false }) => (
-    <Card style={styles.poolCard}>
-      <View style={styles.poolHeader}>
-        <View style={styles.tokenPair}>
-          <View style={styles.tokenLogos}>
-            <TokenLogo symbol={pool.token1.symbol} size={32} style={styles.tokenLogo} />
-            <TokenLogo symbol={pool.token2.symbol} size={32} style={[styles.tokenLogo, styles.tokenLogoOverlap]} />
-          </View>
-          <View style={styles.tokenInfo}>
-            <Text style={styles.tokenPairText}>
-              {pool.token1.symbol}/{pool.token2.symbol}
-            </Text>
-            <Text style={styles.poolType}>Token-2022 Pool</Text>
-          </View>
-        </View>
-        <View style={styles.poolStats}>
-          <Text style={styles.liquidityText}>${pool.liquidity}</Text>
-          <Text style={styles.aprText}>{pool.apr} APR</Text>
-        </View>
-      </View>
+  const filters = [
+    { key: 'all', label: 'All Pairs' },
+    { key: 'trending', label: 'Trending' },
+    { key: 'gainers', label: 'Top Gainers' },
+    { key: 'losers', label: 'Top Losers' },
+    { key: 'volume', label: 'High Volume' },
+    { key: 'liquidity', label: 'High Liquidity' },
+  ];
 
-      {isMyPool ? (
-        <View style={styles.myPoolDetails}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Your Share</Text>
-            <Text style={styles.detailValue}>{pool.share}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Pool Value</Text>
-            <Text style={styles.detailValue}>{pool.value}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>24h Change</Text>
-            <Text style={[
-              styles.detailValue,
-              pool.change.startsWith('+') ? styles.positiveChange : styles.negativeChange
-            ]}>
-              {pool.change}
-            </Text>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.poolDetails}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>24h Volume</Text>
-            <Text style={styles.detailValue}>{pool.volume24h}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>24h Change</Text>
-            <Text style={[
-              styles.detailValue,
-              pool.change.startsWith('+') ? styles.positiveChange : styles.negativeChange
-            ]}>
-              {pool.change}
-            </Text>
-          </View>
-        </View>
-      )}
+  const dexes = [
+    { key: 'all', label: 'All DEXes' },
+    { key: 'raydium', label: 'Raydium' },
+    { key: 'orca', label: 'Orca' },
+    { key: 'jupiter', label: 'Jupiter' },
+  ];
 
-      <View style={styles.poolActions}>
-        {isMyPool ? (
-          <>
-            <Button
-              title="Add Liquidity"
-              onPress={() => {}}
-              size="small"
-              style={styles.actionButton}
-            />
-            <Button
-              title="Remove"
-              onPress={() => {}}
-              variant="outline"
-              size="small"
-              style={styles.actionButton}
-            />
-          </>
-        ) : (
-          <Button
-            title="Add Liquidity"
-            onPress={() => {}}
-            size="small"
-            style={styles.actionButton}
-          />
-        )}
-      </View>
-    </Card>
-  );
+  const renderPairItem = ({ item }: { item: TradingPair }) => {
+    const isPositive = item.priceChangePercent24h.startsWith('+');
+    
+    return (
+      <TouchableOpacity style={styles.pairItem}>
+        <View style={styles.pairHeader}>
+          <View style={styles.tokenPair}>
+            <View style={styles.tokenLogos}>
+              <TokenLogo symbol={item.token0.symbol} size={32} style={styles.tokenLogo} />
+              <TokenLogo symbol={item.token1.symbol} size={32} style={[styles.tokenLogo, styles.tokenLogoOverlap]} />
+            </View>
+            <View style={styles.tokenInfo}>
+              <Text style={styles.tokenPairText}>
+                {item.token0.symbol}/{item.token1.symbol}
+              </Text>
+              <Text style={styles.dexName}>{item.dexId.toUpperCase()}</Text>
+            </View>
+          </View>
+          <View style={styles.priceInfo}>
+            <Text style={styles.tokenPrice}>{item.price}</Text>
+            <Text style={[
+              styles.priceChange,
+              isPositive ? styles.positiveChange : styles.negativeChange
+            ]}>
+              {item.priceChangePercent24h}
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.pairDetails}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Volume 24h</Text>
+            <Text style={styles.detailValue}>{item.volume24h}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Liquidity</Text>
+            <Text style={styles.detailValue}>{item.liquidity}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Market Cap</Text>
+            <Text style={styles.detailValue}>{item.marketCap}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.pairActions}>
+          <TouchableOpacity style={styles.actionButton}>
+            <AppIcon name="chart" size={16} color="#fff" />
+            <Text style={styles.actionText}>Chart</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <AppIcon name="swap" size={16} color="#fff" />
+            <Text style={styles.actionText}>Trade</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <AppIcon name="info" size={16} color="#fff" />
+            <Text style={styles.actionText}>Info</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Header title="Liquidity Pools" subtitle="Token-2022 AMM" />
+      <Header title="Trading Pairs" subtitle="Solana Token-2022 Pairs" />
       
       <ScrollView 
         style={styles.scrollView} 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Tab Navigation */}
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'my-pools' && styles.activeTab]}
-            onPress={() => setActiveTab('my-pools')}
-          >
-            <Text style={[styles.tabText, activeTab === 'my-pools' && styles.activeTabText]}>
-              My Pools
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'all-pools' && styles.activeTab]}
-            onPress={() => setActiveTab('all-pools')}
-          >
-            <Text style={[styles.tabText, activeTab === 'all-pools' && styles.activeTabText]}>
-              All Pools
-            </Text>
-          </TouchableOpacity>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <AppIcon name="search" size={20} color="rgba(255, 255, 255, 0.6)" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by token name or pair..."
+              placeholderTextColor="rgba(255, 255, 255, 0.4)"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <AppIcon name="close" size={20} color="rgba(255, 255, 255, 0.6)" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
-        {/* Pool Statistics */}
+        {/* DEX Filter */}
+        <View style={styles.dexContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.dexScroll}
+          >
+            {dexes.map((dex) => (
+              <TouchableOpacity
+                key={dex.key}
+                style={[
+                  styles.dexButton,
+                  selectedDex === dex.key && styles.activeDexButton
+                ]}
+                onPress={() => setSelectedDex(dex.key)}
+              >
+                <Text style={[
+                  styles.dexText,
+                  selectedDex === dex.key && styles.activeDexText
+                ]}>
+                  {dex.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Filters */}
+        <View style={styles.filtersContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filtersScroll}
+          >
+            {filters.map((filter) => (
+              <TouchableOpacity
+                key={filter.key}
+                style={[
+                  styles.filterButton,
+                  selectedFilter === filter.key && styles.activeFilterButton
+                ]}
+                onPress={() => setSelectedFilter(filter.key)}
+              >
+                <Text style={[
+                  styles.filterText,
+                  selectedFilter === filter.key && styles.activeFilterText
+                ]}>
+                  {filter.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Trading Pairs */}
+        <Card style={styles.pairsCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {selectedFilter === 'all' && 'All Trading Pairs'}
+              {selectedFilter === 'trending' && 'Trending Pairs'}
+              {selectedFilter === 'gainers' && 'Top Gainers'}
+              {selectedFilter === 'losers' && 'Top Losers'}
+              {selectedFilter === 'volume' && 'High Volume'}
+              {selectedFilter === 'liquidity' && 'High Liquidity'}
+            </Text>
+            <TouchableOpacity>
+              <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={tradingPairs}
+            renderItem={renderPairItem}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+          />
+        </Card>
+
+        {/* Market Stats */}
         <Card style={styles.statsCard}>
-          <View style={styles.statsRow}>
+          <Text style={styles.sectionTitle}>Market Statistics</Text>
+          <View style={styles.statsGrid}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>$2.4M</Text>
+              <Text style={styles.statValue}>1,234</Text>
+              <Text style={styles.statLabel}>Total Pairs</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>$156M</Text>
+              <Text style={styles.statLabel}>24h Volume</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>$2.4B</Text>
               <Text style={styles.statLabel}>Total Liquidity</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>156</Text>
-              <Text style={styles.statLabel}>Active Pools</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>$89K</Text>
-              <Text style={styles.statLabel}>24h Volume</Text>
+              <Text style={styles.statValue}>3</Text>
+              <Text style={styles.statLabel}>Active DEXes</Text>
             </View>
           </View>
         </Card>
-
-        {/* Pools List */}
-        {activeTab === 'my-pools' ? (
-          <View style={styles.poolsList}>
-            {myPools.length > 0 ? (
-              myPools.map((pool) => (
-                <PoolCard key={pool.id} pool={pool} isMyPool={true} />
-              ))
-            ) : (
-              <Card style={styles.emptyState}>
-                <AppIcon name="pools" size={64} color="rgba(255, 255, 255, 0.3)" />
-                <Text style={styles.emptyTitle}>No Liquidity Pools</Text>
-                <Text style={styles.emptySubtitle}>
-                  Add liquidity to pools to start earning fees
-                </Text>
-                <Button
-                  title="Add Liquidity"
-                  onPress={() => {}}
-                  size="medium"
-                  style={styles.emptyButton}
-                />
-              </Card>
-            )}
-          </View>
-        ) : (
-          <View style={styles.poolsList}>
-            {allPools.map((pool) => (
-              <PoolCard key={pool.id} pool={pool} />
-            ))}
-          </View>
-        )}
       </ScrollView>
     </View>
   );
@@ -267,70 +343,123 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 100,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
+  searchContainer: {
     marginTop: 20,
+    marginHorizontal: 16,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  activeTab: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  tabText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-    fontFamily: FONTS.semiBold,
-    fontWeight: FONT_WEIGHTS.semiBold,
-  },
-  activeTabText: {
+  searchInput: {
+    flex: 1,
     color: '#fff',
-  },
-  statsCard: {
-    marginTop: 16,
-    marginHorizontal: 16,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    color: '#fff',
-    fontSize: 20,
-    marginBottom: 4,
-    fontFamily: FONTS.bold,
-    fontWeight: FONT_WEIGHTS.bold,
-  },
-  statLabel: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 12,
+    fontSize: 16,
+    marginLeft: 12,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
   },
-  poolsList: {
+  dexContainer: {
+    marginTop: 16,
+    marginHorizontal: 16,
+  },
+  dexScroll: {
+    paddingRight: 16,
+  },
+  dexButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: 8,
+  },
+  activeDexButton: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+  },
+  dexText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  activeDexText: {
+    color: '#fff',
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  filtersContainer: {
+    marginTop: 12,
+    marginHorizontal: 16,
+  },
+  filtersScroll: {
+    paddingRight: 16,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: 8,
+  },
+  activeFilterButton: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+  },
+  filterText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  activeFilterText: {
+    color: '#fff',
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  pairsCard: {
     marginTop: 16,
   },
-  poolCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  poolHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  sectionTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
+  },
+  viewAllText: {
+    color: '#667eea',
+    fontSize: 14,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  pairItem: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  pairHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
   tokenPair: {
     flexDirection: 'row',
@@ -340,14 +469,13 @@ const styles = StyleSheet.create({
   tokenLogos: {
     flexDirection: 'row',
     marginRight: 12,
-    alignItems: 'center',
   },
   tokenLogo: {
-    marginRight: 0,
+    borderWidth: 2,
+    borderColor: '#0a0a0a',
   },
   tokenLogoOverlap: {
-    marginLeft: -12,
-    zIndex: 1,
+    marginLeft: -8,
   },
   tokenInfo: {
     flex: 1,
@@ -359,54 +487,23 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
     fontWeight: FONT_WEIGHTS.semiBold,
   },
-  poolType: {
+  dexName: {
     color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 12,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
   },
-  poolStats: {
+  priceInfo: {
     alignItems: 'flex-end',
   },
-  liquidityText: {
+  tokenPrice: {
     color: '#fff',
     fontSize: 16,
     marginBottom: 2,
     fontFamily: FONTS.semiBold,
     fontWeight: FONT_WEIGHTS.semiBold,
   },
-  aprText: {
-    color: '#51cf66',
-    fontSize: 12,
-    fontFamily: FONTS.medium,
-    fontWeight: FONT_WEIGHTS.medium,
-  },
-  myPoolDetails: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  poolDetails: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  detailLabel: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-    fontFamily: FONTS.medium,
-    fontWeight: FONT_WEIGHTS.medium,
-  },
-  detailValue: {
-    color: '#fff',
+  priceChange: {
     fontSize: 14,
     fontFamily: FONTS.semiBold,
     fontWeight: FONT_WEIGHTS.semiBold,
@@ -417,35 +514,76 @@ const styles = StyleSheet.create({
   negativeChange: {
     color: '#ff6b6b',
   },
-  poolActions: {
+  pairDetails: {
+    marginBottom: 12,
+  },
+  detailRow: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  detailLabel: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  detailValue: {
+    color: '#fff',
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  pairActions: {
+    flexDirection: 'row',
+    gap: 8,
   },
   actionButton: {
-    flex: 1,
-  },
-  emptyState: {
-    marginHorizontal: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  emptyTitle: {
+  actionText: {
+    color: '#fff',
+    fontSize: 12,
+    marginLeft: 4,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  statsCard: {
+    marginTop: 16,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    width: (width - 80) / 2,
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  statValue: {
     color: '#fff',
     fontSize: 20,
-    marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 4,
     fontFamily: FONTS.bold,
     fontWeight: FONT_WEIGHTS.bold,
   },
-  emptySubtitle: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-    fontFamily: FONTS.regular,
-    fontWeight: FONT_WEIGHTS.regular,
-  },
-  emptyButton: {
-    width: 200,
+  statLabel: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
 }); 

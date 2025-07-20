@@ -1,141 +1,378 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
-import { AppIcon } from '../components/AppIcon';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
+import { AppIcon } from '../components/AppIcon';
 import { TokenLogo } from '../components/TokenLogo';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 
 const { width } = Dimensions.get('window');
 
+interface Token {
+  symbol: string;
+  name: string;
+  address: string;
+  logo: string;
+  price: number;
+  priceChange24h: number;
+  balance: number;
+}
+
+interface SwapState {
+  fromToken: Token;
+  toToken: Token;
+  fromAmount: string;
+  toAmount: string;
+  slippage: number;
+  gasEstimate: number;
+  priceImpact: number;
+}
+
 export const SwapScreen: React.FC = () => {
-  const [fromToken, setFromToken] = useState('SOL');
-  const [toToken, setToToken] = useState('USDC');
-  const [fromAmount, setFromAmount] = useState('');
-  const [toAmount, setToAmount] = useState('');
-  const [slippage, setSlippage] = useState('0.5');
+  const [swapState, setSwapState] = useState<SwapState>({
+    fromToken: {
+      symbol: 'SOL',
+      name: 'Solana',
+      address: 'So11111111111111111111111111111111111111112',
+      logo: 'solana',
+      price: 98.45,
+      priceChange24h: 2.3,
+      balance: 12.5,
+    },
+    toToken: {
+      symbol: 'BONK',
+      name: 'Bonk',
+      address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+      logo: 'bonk',
+      price: 0.00001234,
+      priceChange24h: 11.08,
+      balance: 1000000,
+    },
+    fromAmount: '',
+    toAmount: '',
+    slippage: 0.5,
+    gasEstimate: 0.001,
+    priceImpact: 0.12,
+  });
 
-  const tokens = [
-    { symbol: 'SOL', name: 'Solana', price: '$98.45', change: '+2.3%', logo: 'solana' },
-    { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '0.0%', logo: 'usdc' },
-    { symbol: 'RWA', name: 'RWA Token', price: '$1.25', change: '+5.2%', logo: 'rwa' },
-    { symbol: 'ENT', name: 'Enterprise Coin', price: '$0.89', change: '-2.1%', logo: 'ent' },
+  const [showTokenSelector, setShowTokenSelector] = useState<'from' | 'to' | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const popularTokens: Token[] = [
+    {
+      symbol: 'SOL',
+      name: 'Solana',
+      address: 'So11111111111111111111111111111111111111112',
+      logo: 'solana',
+      price: 98.45,
+      priceChange24h: 2.3,
+      balance: 12.5,
+    },
+    {
+      symbol: 'BONK',
+      name: 'Bonk',
+      address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+      logo: 'bonk',
+      price: 0.00001234,
+      priceChange24h: 11.08,
+      balance: 1000000,
+    },
+    {
+      symbol: 'JUP',
+      name: 'Jupiter',
+      address: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
+      logo: 'jupiter',
+      price: 0.5678,
+      priceChange24h: 4.31,
+      balance: 500,
+    },
+    {
+      symbol: 'RAY',
+      name: 'Raydium',
+      address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
+      logo: 'raydium',
+      price: 1.2345,
+      priceChange24h: -4.39,
+      balance: 200,
+    },
   ];
 
-  const swapSettings = [
-    { label: 'Slippage Tolerance', value: `${slippage}%` },
-    { label: 'Network Fee', value: '~$0.002' },
-    { label: 'Minimum Received', value: '0.0 USDC' },
-  ];
+  const slippageOptions = [0.1, 0.5, 1.0, 2.0];
+
+  const updateSwapState = (field: keyof SwapState, value: any) => {
+    setSwapState(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFromAmountChange = (amount: string) => {
+    updateSwapState('fromAmount', amount);
+    // Calculate to amount based on price
+    if (amount && !isNaN(parseFloat(amount))) {
+      const fromValue = parseFloat(amount) * swapState.fromToken.price;
+      const toAmount = fromValue / swapState.toToken.price;
+      updateSwapState('toAmount', toAmount.toFixed(6));
+    } else {
+      updateSwapState('toAmount', '');
+    }
+  };
+
+  const handleToAmountChange = (amount: string) => {
+    updateSwapState('toAmount', amount);
+    // Calculate from amount based on price
+    if (amount && !isNaN(parseFloat(amount))) {
+      const toValue = parseFloat(amount) * swapState.toToken.price;
+      const fromAmount = toValue / swapState.fromToken.price;
+      updateSwapState('fromAmount', fromAmount.toFixed(6));
+    } else {
+      updateSwapState('fromAmount', '');
+    }
+  };
+
+  const handleTokenSelect = (token: Token, type: 'from' | 'to') => {
+    if (type === 'from') {
+      updateSwapState('fromToken', token);
+    } else {
+      updateSwapState('toToken', token);
+    }
+    setShowTokenSelector(null);
+  };
+
+  const handleSwapTokens = () => {
+    const tempFrom = swapState.fromToken;
+    const tempFromAmount = swapState.fromAmount;
+    
+    updateSwapState('fromToken', swapState.toToken);
+    updateSwapState('toToken', tempFrom);
+    updateSwapState('fromAmount', swapState.toAmount);
+    updateSwapState('toAmount', tempFromAmount);
+  };
+
+  const handleSwap = () => {
+    if (!swapState.fromAmount || !swapState.toAmount) {
+      Alert.alert('Error', 'Please enter amounts to swap');
+      return;
+    }
+
+    if (parseFloat(swapState.fromAmount) > swapState.fromToken.balance) {
+      Alert.alert('Error', 'Insufficient balance');
+      return;
+    }
+
+    // Here you would integrate with Solana Token-2022 swap
+    Alert.alert(
+      'Confirm Swap',
+      `Swap ${swapState.fromAmount} ${swapState.fromToken.symbol} for ${swapState.toAmount} ${swapState.toToken.symbol}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Swap', 
+          onPress: () => {
+            console.log('Executing swap:', swapState);
+            Alert.alert('Success', 'Swap executed successfully!');
+          }
+        }
+      ]
+    );
+  };
+
+  const renderTokenSelector = () => (
+    <View style={styles.tokenSelectorOverlay}>
+      <View style={styles.tokenSelectorModal}>
+        <View style={styles.tokenSelectorHeader}>
+          <Text style={styles.tokenSelectorTitle}>Select Token</Text>
+          <TouchableOpacity onPress={() => setShowTokenSelector(null)}>
+            <AppIcon name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView style={styles.tokenList}>
+          {popularTokens.map((token) => (
+            <TouchableOpacity
+              key={token.address}
+              style={styles.tokenItem}
+              onPress={() => handleTokenSelect(token, showTokenSelector!)}
+            >
+              <View style={styles.tokenInfo}>
+                <TokenLogo symbol={token.symbol} size={32} />
+                <View style={styles.tokenDetails}>
+                  <Text style={styles.tokenSymbol}>{token.symbol}</Text>
+                  <Text style={styles.tokenName}>{token.name}</Text>
+                </View>
+              </View>
+              <View style={styles.tokenBalance}>
+                <Text style={styles.balanceText}>{token.balance.toLocaleString()}</Text>
+                <Text style={styles.balanceLabel}>{token.symbol}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
+
+  const renderSwapCard = () => (
+    <Card style={styles.swapCard}>
+      {/* From Token */}
+      <View style={styles.tokenInputContainer}>
+        <View style={styles.tokenInputHeader}>
+          <Text style={styles.inputLabel}>From</Text>
+          <Text style={styles.balanceText}>
+            Balance: {swapState.fromToken.balance.toLocaleString()} {swapState.fromToken.symbol}
+          </Text>
+        </View>
+        
+        <View style={styles.tokenInputRow}>
+          <TouchableOpacity 
+            style={styles.tokenSelector}
+            onPress={() => setShowTokenSelector('from')}
+          >
+            <TokenLogo symbol={swapState.fromToken.symbol} size={32} />
+            <Text style={styles.tokenSymbol}>{swapState.fromToken.symbol}</Text>
+            <AppIcon name="chevron-down" size={16} color="rgba(255, 255, 255, 0.6)" />
+          </TouchableOpacity>
+          
+          <View style={styles.amountInput}>
+            <TextInput
+              style={styles.amountTextInput}
+              placeholder="0.0"
+              placeholderTextColor="rgba(255, 255, 255, 0.4)"
+              value={swapState.fromAmount}
+              onChangeText={handleFromAmountChange}
+              keyboardType="numeric"
+            />
+            <Text style={styles.usdValue}>
+              ${swapState.fromAmount ? (parseFloat(swapState.fromAmount) * swapState.fromToken.price).toFixed(2) : '0.00'}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Swap Button */}
+      <TouchableOpacity style={styles.swapButton} onPress={handleSwapTokens}>
+        <AppIcon name="swap" size={20} color="#fff" />
+      </TouchableOpacity>
+
+      {/* To Token */}
+      <View style={styles.tokenInputContainer}>
+        <View style={styles.tokenInputHeader}>
+          <Text style={styles.inputLabel}>To</Text>
+          <Text style={styles.balanceText}>
+            Balance: {swapState.toToken.balance.toLocaleString()} {swapState.toToken.symbol}
+          </Text>
+        </View>
+        
+        <View style={styles.tokenInputRow}>
+          <TouchableOpacity 
+            style={styles.tokenSelector}
+            onPress={() => setShowTokenSelector('to')}
+          >
+            <TokenLogo symbol={swapState.toToken.symbol} size={32} />
+            <Text style={styles.tokenSymbol}>{swapState.toToken.symbol}</Text>
+            <AppIcon name="chevron-down" size={16} color="rgba(255, 255, 255, 0.6)" />
+          </TouchableOpacity>
+          
+          <View style={styles.amountInput}>
+            <TextInput
+              style={styles.amountTextInput}
+              placeholder="0.0"
+              placeholderTextColor="rgba(255, 255, 255, 0.4)"
+              value={swapState.toAmount}
+              onChangeText={handleToAmountChange}
+              keyboardType="numeric"
+            />
+            <Text style={styles.usdValue}>
+              ${swapState.toAmount ? (parseFloat(swapState.toAmount) * swapState.toToken.price).toFixed(2) : '0.00'}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Card>
+  );
+
+  const renderSwapDetails = () => (
+    <Card style={styles.detailsCard}>
+      <View style={styles.detailsHeader}>
+        <Text style={styles.detailsTitle}>Swap Details</Text>
+        <TouchableOpacity onPress={() => setShowSettings(!showSettings)}>
+          <AppIcon name="settings" size={20} color="rgba(255, 255, 255, 0.6)" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Rate</Text>
+        <Text style={styles.detailValue}>
+          1 {swapState.fromToken.symbol} = {(swapState.toToken.price / swapState.fromToken.price).toFixed(6)} {swapState.toToken.symbol}
+        </Text>
+      </View>
+
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Price Impact</Text>
+        <Text style={[
+          styles.detailValue,
+          swapState.priceImpact > 2 ? styles.highImpact : styles.lowImpact
+        ]}>
+          {swapState.priceImpact}%
+        </Text>
+      </View>
+
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Network Fee</Text>
+        <Text style={styles.detailValue}>{swapState.gasEstimate} SOL</Text>
+      </View>
+
+      {showSettings && (
+        <View style={styles.settingsSection}>
+          <Text style={styles.settingsTitle}>Slippage Tolerance</Text>
+          <View style={styles.slippageOptions}>
+            {slippageOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.slippageOption,
+                  swapState.slippage === option && styles.selectedSlippageOption
+                ]}
+                onPress={() => updateSwapState('slippage', option)}
+              >
+                <Text style={[
+                  styles.slippageOptionText,
+                  swapState.slippage === option && styles.selectedSlippageOptionText
+                ]}>
+                  {option}%
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+    </Card>
+  );
+
+
 
   return (
     <View style={styles.container}>
-      <Header title="Swap" subtitle="Token-2022 Exchange" />
+      <Header title="Swap" subtitle="Trade Token-2022 tokens" />
       
       <ScrollView 
         style={styles.scrollView} 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Swap Interface */}
-        <Card style={styles.swapCard}>
-          <Text style={styles.swapTitle}>Swap Tokens</Text>
-          
-          {/* From Token */}
-          <View style={styles.tokenInputContainer}>
-            <Text style={styles.inputLabel}>From</Text>
-            <View style={styles.tokenInput}>
-              <View style={styles.tokenSelector}>
-                <TokenLogo symbol={fromToken} size={32} style={styles.tokenLogo} />
-                <Text style={styles.tokenSymbol}>{fromToken}</Text>
-                <AppIcon name="keyboard-arrow-down" size={20} color="#fff" />
-              </View>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="0.0"
-                placeholderTextColor="rgba(255, 255, 255, 0.4)"
-                value={fromAmount}
-                onChangeText={setFromAmount}
-                keyboardType="numeric"
-              />
-            </View>
-            <Text style={styles.balanceText}>Balance: 0.0 {fromToken}</Text>
-          </View>
-
-          {/* Swap Arrow */}
-          <TouchableOpacity style={styles.swapArrow}>
-            <AppIcon name="swap-vert" size={24} color="#fff" />
-          </TouchableOpacity>
-
-          {/* To Token */}
-          <View style={styles.tokenInputContainer}>
-            <Text style={styles.inputLabel}>To</Text>
-            <View style={styles.tokenInput}>
-              <View style={styles.tokenSelector}>
-                <TokenLogo symbol={toToken} size={32} style={styles.tokenLogo} />
-                <Text style={styles.tokenSymbol}>{toToken}</Text>
-                <AppIcon name="keyboard-arrow-down" size={20} color="#fff" />
-              </View>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="0.0"
-                placeholderTextColor="rgba(255, 255, 255, 0.4)"
-                value={toAmount}
-                onChangeText={setToAmount}
-                keyboardType="numeric"
-              />
-            </View>
-            <Text style={styles.balanceText}>Balance: 0.0 {toToken}</Text>
-          </View>
+        {renderSwapCard()}
+        {renderSwapDetails()}
 
           {/* Swap Button */}
+        <View style={styles.swapButtonContainer}>
           <Button
-            title="Connect Wallet to Swap"
-            onPress={() => {}}
+            title="Swap"
+            onPress={handleSwap}
             size="large"
-            style={styles.swapButton}
-            disabled={true}
+            disabled={!swapState.fromAmount || !swapState.toAmount}
           />
-        </Card>
-
-        {/* Swap Settings */}
-        <Card style={styles.settingsCard}>
-          <Text style={styles.settingsTitle}>Swap Settings</Text>
-          {swapSettings.map((setting, index) => (
-            <View key={index} style={styles.settingItem}>
-              <Text style={styles.settingLabel}>{setting.label}</Text>
-              <Text style={styles.settingValue}>{setting.value}</Text>
-            </View>
-          ))}
-        </Card>
-
-        {/* Recent Swaps */}
-        <Card>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Swaps</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
           </View>
-          <View style={styles.recentSwaps}>
-            <View style={styles.swapItem}>
-              <View style={styles.swapInfo}>
-                <Text style={styles.swapPair}>SOL → USDC</Text>
-                <Text style={styles.swapAmount}>0.5 SOL → 49.22 USDC</Text>
-              </View>
-              <Text style={styles.swapTime}>2 min ago</Text>
-            </View>
-            <View style={styles.swapItem}>
-              <View style={styles.swapInfo}>
-                <Text style={styles.swapPair}>RWA → SOL</Text>
-                <Text style={styles.swapAmount}>100 RWA → 0.8 SOL</Text>
-              </View>
-              <Text style={styles.swapTime}>5 min ago</Text>
-            </View>
-          </View>
-        </Card>
       </ScrollView>
+
+      {showTokenSelector && renderTokenSelector()}
     </View>
   );
 };
@@ -149,69 +386,76 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 100,
   },
   swapCard: {
     marginTop: 20,
-  },
-  swapTitle: {
-    color: '#fff',
-    fontSize: 24,
-    marginBottom: 20,
-    fontFamily: FONTS.bold,
-    fontWeight: FONT_WEIGHTS.bold,
+    marginHorizontal: 16,
+    padding: 20,
   },
   tokenInputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  tokenInputHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   inputLabel: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 14,
-    marginBottom: 8,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  balanceText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
   },
-  tokenInput: {
+  tokenInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    gap: 12,
   },
   tokenSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
-  tokenLogo: {
-    marginRight: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    gap: 8,
   },
   tokenSymbol: {
     color: '#fff',
     fontSize: 16,
-    marginRight: 4,
     fontFamily: FONTS.semiBold,
     fontWeight: FONT_WEIGHTS.semiBold,
   },
   amountInput: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'right',
     flex: 1,
+    alignItems: 'flex-end',
+  },
+  amountTextInput: {
+    color: '#fff',
+    fontSize: 20,
+    textAlign: 'right',
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
+    minWidth: 100,
+  },
+  usdValue: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
+    marginTop: 4,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
   },
-  balanceText: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 12,
-    marginTop: 4,
-    fontFamily: FONTS.regular,
-    fontWeight: FONT_WEIGHTS.regular,
-  },
-  swapArrow: {
+  swapButton: {
     alignSelf: 'center',
     width: 40,
     height: 40,
@@ -219,63 +463,126 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 10,
+    marginVertical: 8,
   },
-  swapButton: {
-    marginTop: 20,
-  },
-  settingsCard: {
+  detailsCard: {
     marginTop: 16,
+    marginHorizontal: 16,
   },
-  settingsTitle: {
-    color: '#fff',
-    fontSize: 18,
-    marginBottom: 16,
-    fontFamily: FONTS.bold,
-    fontWeight: FONT_WEIGHTS.bold,
-  },
-  settingItem: {
+  detailsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 16,
   },
-  settingLabel: {
-    color: 'rgba(255, 255, 255, 0.7)',
+  detailsTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  detailLabel: {
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
   },
-  settingValue: {
+  detailValue: {
     color: '#fff',
     fontSize: 14,
     fontFamily: FONTS.semiBold,
     fontWeight: FONT_WEIGHTS.semiBold,
   },
-  sectionHeader: {
+  lowImpact: {
+    color: '#51cf66',
+  },
+  highImpact: {
+    color: '#ff6b6b',
+  },
+  settingsSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  settingsTitle: {
+    color: '#fff',
+    fontSize: 14,
+    marginBottom: 12,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  slippageOptions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  slippageOption: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+  },
+  selectedSlippageOption: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+  },
+  slippageOptionText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  selectedSlippageOptionText: {
+    color: '#fff',
+  },
+
+  swapButtonContainer: {
+    marginTop: 24,
+    marginHorizontal: 16,
+  },
+  tokenSelectorOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'flex-end',
+    zIndex: 1000,
+  },
+  tokenSelectorModal: {
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '70%',
+  },
+  tokenSelectorHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  sectionTitle: {
+  tokenSelectorTitle: {
     color: '#fff',
     fontSize: 18,
     fontFamily: FONTS.bold,
     fontWeight: FONT_WEIGHTS.bold,
   },
-  viewAllText: {
-    color: '#fff',
-    fontSize: 14,
-    fontFamily: FONTS.semiBold,
-    fontWeight: FONT_WEIGHTS.semiBold,
+  tokenList: {
+    maxHeight: 400,
   },
-  recentSwaps: {
-    marginTop: 8,
-  },
-  swapItem: {
+  tokenItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -283,26 +590,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  swapInfo: {
-    flex: 1,
+  tokenInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  swapPair: {
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 4,
-    fontFamily: FONTS.semiBold,
-    fontWeight: FONT_WEIGHTS.semiBold,
+  tokenDetails: {
+    gap: 2,
   },
-  swapAmount: {
+  tokenName: {
     color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
   },
-  swapTime: {
-    color: 'rgba(255, 255, 255, 0.5)',
+  tokenBalance: {
+    alignItems: 'flex-end',
+  },
+  balanceLabel: {
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 12,
-    fontFamily: FONTS.regular,
-    fontWeight: FONT_WEIGHTS.regular,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
 }); 

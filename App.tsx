@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, StyleSheet, SafeAreaView, Text } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
-import { CreateTokenScreen } from './src/screens/CreateTokenScreen';
 import { SwapScreen } from './src/screens/SwapScreen';
 import { PoolsScreen } from './src/screens/PoolsScreen';
+import { CreateTokenScreen } from './src/screens/CreateTokenScreen';
+import { AnalyticsScreen } from './src/screens/AnalyticsScreen';
+import { TokenDetailScreen } from './src/screens/TokenDetailScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
+import { TradingScreen } from './src/screens/TradingScreen';
 import { BottomTabBar } from './src/components/BottomTabBar';
 
 // Keep the splash screen visible while we fetch resources
@@ -32,12 +34,16 @@ export default function App() {
     switch (activeTab) {
       case 'home':
         return <HomeScreen />;
-      case 'swap':
-        return <SwapScreen />;
+      case 'pairs':
+        return <PoolsScreen />;
       case 'create':
         return <CreateTokenScreen />;
-      case 'pools':
-        return <PoolsScreen />;
+      case 'analytics':
+        return <AnalyticsScreen />;
+      case 'swap':
+        return <SwapScreen />;
+      case 'trading':
+        return <TradingScreen />;
       case 'profile':
         return <ProfileScreen />;
       default:

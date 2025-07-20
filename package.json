@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-navigation/native": "^7.1.14",
     "expo": "~52.0.47",
     "expo-font": "~12.0.10",
     "expo-splash-screen": "~0.26.4",
@@ -17,8 +18,10 @@
     "react-native": "0.76.9",
     "react-native-elements": "^3.4.3",
     "react-native-safe-area-context": "^5.5.2",
+    "react-native-screens": "^4.13.1",
     "react-native-svg": "^15.12.0",
-    "react-native-vector-icons": "^10.0.3"
+    "react-native-vector-icons": "^10.0.3",
+    "react-native-webview": "^13.15.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

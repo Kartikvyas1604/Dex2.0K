@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { AppIcon } from './AppIcon';
+import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 
 interface HeaderProps {
   title: string;
   onBack?: () => void;
-  onMenu?: () => void;
   showBack?: boolean;
   subtitle?: string;
 }
@@ -15,7 +15,6 @@ const { width } = Dimensions.get('window');
 export const Header: React.FC<HeaderProps> = ({ 
   title, 
   onBack, 
-  onMenu, 
   showBack = false,
   subtitle
 }) => {
@@ -24,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
       <View style={styles.content}>
         {showBack && (
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Icon name="arrow-back" size={20} color="#fff" />
+            <AppIcon name="arrow-back" size={20} color="#fff" />
           </TouchableOpacity>
         )}
         
@@ -33,9 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
           {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
         
-        <TouchableOpacity onPress={onMenu} style={styles.menuButton}>
-          <Icon name="menu" size={20} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.spacer} />
       </View>
     </View>
   );
@@ -77,22 +74,18 @@ const styles = StyleSheet.create({
   title: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   subtitle: {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 14,
     marginTop: 2,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
-  menuButton: {
+  spacer: {
     width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
 }); 

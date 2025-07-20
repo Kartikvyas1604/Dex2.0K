@@ -2,15 +2,26 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet, SafeAreaView, Text } from 'react-native';
 import { Icon } from 'react-native-elements';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { CreateTokenScreen } from './src/screens/CreateTokenScreen';
 import { SwapScreen } from './src/screens/SwapScreen';
+import { PoolsScreen } from './src/screens/PoolsScreen';
+import { ProfileScreen } from './src/screens/ProfileScreen';
 import { BottomTabBar } from './src/components/BottomTabBar';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+
+  const [fontsLoaded] = useFonts({
+    'SpaceGrotesk': require('./assets/fonts/Jersey_15,Space_Grotesk/Space_Grotesk/SpaceGrotesk-VariableFont_wght.ttf'),
+  });
 
   const handleConnectWallet = () => {
     // Simulate wallet connection
@@ -26,29 +37,20 @@ export default function App() {
       case 'create':
         return <CreateTokenScreen />;
       case 'pools':
-        return (
-          <View style={styles.placeholderContainer}>
-            <View style={styles.placeholderCard}>
-              <Icon name="water" type="material" size={64} color="#fff" style={styles.placeholderIcon} />
-              <Text style={styles.placeholderTitle}>Liquidity Pools</Text>
-              <Text style={styles.placeholderSubtitle}>Coming Soon</Text>
-            </View>
-          </View>
-        );
+        return <PoolsScreen />;
       case 'profile':
-        return (
-          <View style={styles.placeholderContainer}>
-            <View style={styles.placeholderCard}>
-              <Icon name="person" type="material" size={64} color="#fff" style={styles.placeholderIcon} />
-              <Text style={styles.placeholderTitle}>Profile</Text>
-              <Text style={styles.placeholderSubtitle}>Coming Soon</Text>
-            </View>
-          </View>
-        );
+        return <ProfileScreen />;
       default:
         return <HomeScreen />;
     }
   };
+
+  if (!fontsLoaded) {
+    return null; // Keep splash screen visible
+  }
+
+  // Hide splash screen once fonts are loaded
+  SplashScreen.hideAsync();
 
   if (!isWalletConnected) {
     return (
@@ -77,41 +79,5 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     backgroundColor: '#0a0a0a',
-  },
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  placeholderCard: {
-    width: '100%',
-    height: 300,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  placeholderIcon: {
-    marginBottom: 16,
-  },
-  placeholderTitle: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  placeholderSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 18,
-    fontWeight: '500',
   },
 });

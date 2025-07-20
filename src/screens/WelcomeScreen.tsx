@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { Button } from '../components/Button';
+import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 
 const { width, height } = Dimensions.get('window');
 
@@ -66,7 +67,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConnectWallet })
         ]}
       >
         <View style={styles.logoCircle}>
-          <Icon name="account-balance-wallet" type="material" size={48} color="#fff" />
+          <Image 
+            source={require('../../assets/icon.png')} 
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </View>
         <Text style={styles.appName}>Dex2.0K</Text>
         <Text style={styles.appSubtitle}>Token-2022 AMM Platform</Text>
@@ -92,15 +97,21 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConnectWallet })
 
         <View style={styles.featuresContainer}>
           <View style={styles.featureItem}>
-            <Icon name="security" type="material" size={24} color="#fff" />
+            <View style={styles.featureIconContainer}>
+              <Icon name="security" type="material" size={20} color="#fff" />
+            </View>
             <Text style={styles.featureText}>Secure Trading</Text>
           </View>
           <View style={styles.featureItem}>
-            <Icon name="speed" type="material" size={24} color="#fff" />
+            <View style={styles.featureIconContainer}>
+              <Icon name="speed" type="material" size={20} color="#fff" />
+            </View>
             <Text style={styles.featureText}>Lightning Fast</Text>
           </View>
           <View style={styles.featureItem}>
-            <Icon name="trending-up" type="material" size={24} color="#fff" />
+            <View style={styles.featureIconContainer}>
+              <Icon name="trending-up" type="material" size={20} color="#fff" />
+            </View>
             <Text style={styles.featureText}>Advanced Features</Text>
           </View>
         </View>
@@ -118,6 +129,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConnectWallet })
           <Icon name="arrow-forward" type="material" size={16} color="#fff" />
         </TouchableOpacity>
       </Animated.View>
+
+      {/* Bottom Decorative Element */}
+      <View style={styles.bottomDecoration}>
+        <Image 
+          source={require('../../assets/splash-icon.png')} 
+          style={styles.bottomImage}
+          resizeMode="contain"
+        />
+      </View>
     </View>
   );
 };
@@ -141,92 +161,112 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '10%',
     right: '10%',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
   patternCircle2: {
     position: 'absolute',
-    bottom: '20%',
+    bottom: '25%',
     left: '5%',
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.015)',
   },
   patternCircle3: {
     position: 'absolute',
     top: '50%',
     left: '15%',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.025)',
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 50,
   },
   logoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  logoImage: {
+    width: 60,
+    height: 60,
   },
   appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
+    fontSize: 28,
+    marginBottom: 6,
     letterSpacing: 2,
+    color: '#fff',
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   appSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontWeight: '500',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
   contentContainer: {
     alignItems: 'center',
     width: '100%',
   },
   welcomeTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 24,
     textAlign: 'center',
-    marginBottom: 16,
-    letterSpacing: 1,
+    marginBottom: 12,
+    letterSpacing: 0.5,
+    color: '#fff',
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   welcomeSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 40,
+    lineHeight: 20,
+    marginBottom: 30,
     paddingHorizontal: 20,
+    fontFamily: FONTS.regular,
+    fontWeight: FONT_WEIGHTS.regular,
   },
   featuresContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginBottom: 40,
+    marginBottom: 35,
   },
   featureItem: {
     alignItems: 'center',
     flex: 1,
   },
+  featureIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
   featureText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 8,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 11,
     textAlign: 'center',
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
   connectButton: {
     width: '100%',
@@ -238,9 +278,20 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   learnMoreText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
     marginRight: 8,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  bottomDecoration: {
+    position: 'absolute',
+    bottom: 40,
+    right: 20,
+    opacity: 0.1,
+  },
+  bottomImage: {
+    width: 80,
+    height: 80,
   },
 }); 

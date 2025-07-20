@@ -1,202 +1,140 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
+import { AppIcon } from '../components/AppIcon';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
-import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { TokenLogo } from '../components/TokenLogo';
+import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
+
+const { width } = Dimensions.get('window');
 
 export const SwapScreen: React.FC = () => {
   const [fromToken, setFromToken] = useState('SOL');
-  const [toToken, setToToken] = useState('RWA');
+  const [toToken, setToToken] = useState('USDC');
   const [fromAmount, setFromAmount] = useState('');
   const [toAmount, setToAmount] = useState('');
   const [slippage, setSlippage] = useState('0.5');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const availableTokens = [
-    { symbol: 'SOL', name: 'Solana', price: '$98.45', icon: '☀️' },
-    { symbol: 'RWA', name: 'Real Estate Token', price: '$1.25', icon: '🏠' },
-    { symbol: 'ENT', name: 'Enterprise Coin', price: '$0.89', icon: '🏢' },
-    { symbol: 'RET', name: 'Real Estate Token', price: '$15.67', icon: '🏘️' },
+  const tokens = [
+    { symbol: 'SOL', name: 'Solana', price: '$98.45', change: '+2.3%', logo: 'solana' },
+    { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '0.0%', logo: 'usdc' },
+    { symbol: 'RWA', name: 'RWA Token', price: '$1.25', change: '+5.2%', logo: 'rwa' },
+    { symbol: 'ENT', name: 'Enterprise Coin', price: '$0.89', change: '-2.1%', logo: 'ent' },
   ];
 
-  const slippageOptions = ['0.1', '0.5', '1.0'];
-
-  const handleSwap = () => {
-    if (!fromAmount || !toAmount) {
-      Alert.alert('Error', 'Please enter amounts to swap');
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Simulate swap process with transfer hook validation
-    setTimeout(() => {
-      setIsLoading(false);
-      Alert.alert(
-        'Swap Successful!',
-        `Swapped ${fromAmount} ${fromToken} for ${toAmount} ${toToken}`,
-        [{ text: 'OK' }]
-      );
-    }, 2000);
-  };
-
-  const TokenSelector = ({ 
-    token, 
-    onSelect, 
-    amount, 
-    onAmountChange, 
-    isFrom = false 
-  }: {
-    token: string;
-    onSelect: () => void;
-    amount: string;
-    onAmountChange: (value: string) => void;
-    isFrom?: boolean;
-  }) => {
-    const selectedToken = availableTokens.find(t => t.symbol === token);
-    
-    return (
-      <Card>
-        <View style={styles.tokenSelector}>
-          <TouchableOpacity style={styles.tokenButton} onPress={onSelect}>
-            <Text style={styles.tokenIcon}>{selectedToken?.icon}</Text>
-            <View style={styles.tokenInfo}>
-              <Text style={styles.tokenSymbol}>{selectedToken?.symbol}</Text>
-              <Text style={styles.tokenName}>{selectedToken?.name}</Text>
-            </View>
-            <Text style={styles.tokenPrice}>{selectedToken?.price}</Text>
-            <Text style={styles.arrowIcon}>▼</Text>
-          </TouchableOpacity>
-          
-          <Input
-            label={isFrom ? "You Pay" : "You Receive"}
-            value={amount}
-            onChangeText={onAmountChange}
-            placeholder="0.0"
-            keyboardType="numeric"
-            style={styles.amountInput}
-          />
-          
-          <View style={styles.balanceInfo}>
-            <Text style={styles.balanceLabel}>Balance:</Text>
-            <Text style={styles.balanceValue}>1,234.56 {selectedToken?.symbol}</Text>
-          </View>
-        </View>
-      </Card>
-    );
-  };
+  const swapSettings = [
+    { label: 'Slippage Tolerance', value: `${slippage}%` },
+    { label: 'Network Fee', value: '~$0.002' },
+    { label: 'Minimum Received', value: '0.0 USDC' },
+  ];
 
   return (
     <View style={styles.container}>
-      <Header title="Swap Tokens" showBack />
+      <Header title="Swap" subtitle="Token-2022 Exchange" />
       
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* From Token */}
-        <TokenSelector
-          token={fromToken}
-          onSelect={() => Alert.alert('Select Token', 'Token selection modal would open')}
-          amount={fromAmount}
-          onAmountChange={setFromAmount}
-          isFrom={true}
-        />
-
-        {/* Swap Arrow */}
-        <View style={styles.swapArrowContainer}>
-          <View style={styles.swapArrow}>
-            <Text style={styles.swapArrowIcon}>↓</Text>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Swap Interface */}
+        <Card style={styles.swapCard}>
+          <Text style={styles.swapTitle}>Swap Tokens</Text>
+          
+          {/* From Token */}
+          <View style={styles.tokenInputContainer}>
+            <Text style={styles.inputLabel}>From</Text>
+            <View style={styles.tokenInput}>
+              <View style={styles.tokenSelector}>
+                <TokenLogo symbol={fromToken} size={32} style={styles.tokenLogo} />
+                <Text style={styles.tokenSymbol}>{fromToken}</Text>
+                <AppIcon name="keyboard-arrow-down" size={20} color="#fff" />
+              </View>
+              <TextInput
+                style={styles.amountInput}
+                placeholder="0.0"
+                placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                value={fromAmount}
+                onChangeText={setFromAmount}
+                keyboardType="numeric"
+              />
+            </View>
+            <Text style={styles.balanceText}>Balance: 0.0 {fromToken}</Text>
           </View>
-        </View>
 
-        {/* To Token */}
-        <TokenSelector
-          token={toToken}
-          onSelect={() => Alert.alert('Select Token', 'Token selection modal would open')}
-          amount={toAmount}
-          onAmountChange={setToAmount}
-        />
+          {/* Swap Arrow */}
+          <TouchableOpacity style={styles.swapArrow}>
+            <AppIcon name="swap-vert" size={24} color="#fff" />
+          </TouchableOpacity>
 
-        {/* Transfer Hook Status */}
-        <Card>
-          <Text style={styles.sectionTitle}>Transfer Hook Status</Text>
-          <View style={styles.hookStatusContainer}>
-            <View style={styles.hookStatusItem}>
-              <Text style={styles.hookStatusLabel}>Whitelist Check:</Text>
-              <View style={styles.hookStatusValue}>
-                <Text style={styles.hookStatusIcon}>✅</Text>
-                <Text style={styles.hookStatusText}>Passed</Text>
+          {/* To Token */}
+          <View style={styles.tokenInputContainer}>
+            <Text style={styles.inputLabel}>To</Text>
+            <View style={styles.tokenInput}>
+              <View style={styles.tokenSelector}>
+                <TokenLogo symbol={toToken} size={32} style={styles.tokenLogo} />
+                <Text style={styles.tokenSymbol}>{toToken}</Text>
+                <AppIcon name="keyboard-arrow-down" size={20} color="#fff" />
               </View>
+              <TextInput
+                style={styles.amountInput}
+                placeholder="0.0"
+                placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                value={toAmount}
+                onChangeText={setToAmount}
+                keyboardType="numeric"
+              />
             </View>
-            <View style={styles.hookStatusItem}>
-              <Text style={styles.hookStatusLabel}>KYC Verification:</Text>
-              <View style={styles.hookStatusValue}>
-                <Text style={styles.hookStatusIcon}>✅</Text>
-                <Text style={styles.hookStatusText}>Verified</Text>
-              </View>
-            </View>
-            <View style={styles.hookStatusItem}>
-              <Text style={styles.hookStatusLabel}>Transfer Conditions:</Text>
-              <View style={styles.hookStatusValue}>
-                <Text style={styles.hookStatusIcon}>✅</Text>
-                <Text style={styles.hookStatusText}>Met</Text>
-              </View>
-            </View>
+            <Text style={styles.balanceText}>Balance: 0.0 {toToken}</Text>
           </View>
+
+          {/* Swap Button */}
+          <Button
+            title="Connect Wallet to Swap"
+            onPress={() => {}}
+            size="large"
+            style={styles.swapButton}
+            disabled={true}
+          />
         </Card>
 
         {/* Swap Settings */}
-        <Card>
-          <Text style={styles.sectionTitle}>Swap Settings</Text>
-          
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Slippage Tolerance</Text>
-            <View style={styles.slippageOptions}>
-              {slippageOptions.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.slippageOption,
-                    slippage === option && styles.slippageOptionActive
-                  ]}
-                  onPress={() => setSlippage(option)}
-                >
-                  <Text style={[
-                    styles.slippageOptionText,
-                    slippage === option && styles.slippageOptionTextActive
-                  ]}>
-                    {option}%
-                  </Text>
-                </TouchableOpacity>
-              ))}
+        <Card style={styles.settingsCard}>
+          <Text style={styles.settingsTitle}>Swap Settings</Text>
+          {swapSettings.map((setting, index) => (
+            <View key={index} style={styles.settingItem}>
+              <Text style={styles.settingLabel}>{setting.label}</Text>
+              <Text style={styles.settingValue}>{setting.value}</Text>
             </View>
-          </View>
-
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Price Impact</Text>
-            <Text style={styles.settingValue}>0.12%</Text>
-          </View>
-
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Minimum Received</Text>
-            <Text style={styles.settingValue}>1,234.56 RWA</Text>
-          </View>
-
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Network Fee</Text>
-            <Text style={styles.settingValue}>0.000005 SOL</Text>
-          </View>
+          ))}
         </Card>
 
-        {/* Swap Button */}
-        <View style={styles.buttonContainer}>
-          <Button
-            title={isLoading ? "Processing..." : "Swap Tokens"}
-            onPress={handleSwap}
-            disabled={isLoading || !fromAmount || !toAmount}
-            size="large"
-            style={styles.swapButton}
-          />
-        </View>
+        {/* Recent Swaps */}
+        <Card>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Swaps</Text>
+            <TouchableOpacity>
+              <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.recentSwaps}>
+            <View style={styles.swapItem}>
+              <View style={styles.swapInfo}>
+                <Text style={styles.swapPair}>SOL → USDC</Text>
+                <Text style={styles.swapAmount}>0.5 SOL → 49.22 USDC</Text>
+              </View>
+              <Text style={styles.swapTime}>2 min ago</Text>
+            </View>
+            <View style={styles.swapItem}>
+              <View style={styles.swapInfo}>
+                <Text style={styles.swapPair}>RWA → SOL</Text>
+                <Text style={styles.swapAmount}>100 RWA → 0.8 SOL</Text>
+              </View>
+              <Text style={styles.swapTime}>5 min ago</Text>
+            </View>
+          </View>
+        </Card>
       </ScrollView>
     </View>
   );
@@ -210,111 +148,91 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  tokenSelector: {
-    marginBottom: 8,
+  scrollContent: {
+    paddingBottom: 120,
   },
-  tokenButton: {
+  swapCard: {
+    marginTop: 20,
+  },
+  swapTitle: {
+    color: '#fff',
+    fontSize: 24,
+    marginBottom: 20,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
+  },
+  tokenInputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    marginBottom: 8,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  tokenInput: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    justifyContent: 'space-between',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  tokenIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  tokenInfo: {
+  tokenSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
+  },
+  tokenLogo: {
+    marginRight: 8,
   },
   tokenSymbol: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  tokenName: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-  },
-  tokenPrice: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  arrowIcon: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 12,
+    marginRight: 4,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   amountInput: {
-    marginBottom: 8,
-  },
-  balanceInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  balanceLabel: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-  },
-  balanceValue: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 18,
+    textAlign: 'right',
+    flex: 1,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
-  swapArrowContainer: {
-    alignItems: 'center',
-    marginVertical: 8,
+  balanceText: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 12,
+    marginTop: 4,
+    fontFamily: FONTS.regular,
+    fontWeight: FONT_WEIGHTS.regular,
   },
   swapArrow: {
+    alignSelf: 'center',
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#667eea',
+    marginVertical: 10,
   },
-  swapArrowIcon: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+  swapButton: {
+    marginTop: 20,
   },
-  sectionTitle: {
+  settingsCard: {
+    marginTop: 16,
+  },
+  settingsTitle: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
     marginBottom: 16,
-  },
-  hookStatusContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 8,
-    padding: 16,
-  },
-  hookStatusItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  hookStatusLabel: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-  },
-  hookStatusValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  hookStatusIcon: {
-    fontSize: 16,
-    marginRight: 8,
-  },
-  hookStatusText: {
-    color: '#51cf66',
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   settingItem: {
     flexDirection: 'row',
@@ -327,40 +245,64 @@ const styles = StyleSheet.create({
   settingLabel: {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 14,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
   settingValue: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
-  slippageOptions: {
+  sectionHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  slippageOption: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    marginLeft: 8,
-  },
-  slippageOptionActive: {
-    backgroundColor: '#667eea',
-    borderColor: '#667eea',
-  },
-  slippageOptionText: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 12,
-  },
-  slippageOptionTextActive: {
+  sectionTitle: {
     color: '#fff',
-    fontWeight: '600',
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
-  buttonContainer: {
-    padding: 20,
-    marginBottom: 20,
+  viewAllText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
-  swapButton: {
-    width: '100%',
+  recentSwaps: {
+    marginTop: 8,
+  },
+  swapItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  swapInfo: {
+    flex: 1,
+  },
+  swapPair: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 4,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
+  },
+  swapAmount: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  swapTime: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 12,
+    fontFamily: FONTS.regular,
+    fontWeight: FONT_WEIGHTS.regular,
   },
 }); 

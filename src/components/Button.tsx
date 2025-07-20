@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { AppIcon } from './AppIcon';
+import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 
 interface ButtonProps {
   title: string;
@@ -77,9 +78,8 @@ export const Button: React.FC<ButtonProps> = ({
         ]}
       >
         {icon && (
-          <Icon 
+          <AppIcon 
             name={icon} 
-            type={iconType}
             size={16} 
             color="#667eea" 
             style={styles.iconContainer} 
@@ -110,9 +110,8 @@ export const Button: React.FC<ButtonProps> = ({
       ]}
     >
       {icon && (
-        <Icon 
+        <AppIcon 
           name={icon} 
-          type={iconType}
           size={16} 
           color="#fff" 
           style={styles.iconContainer} 
@@ -145,9 +144,10 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
-    fontWeight: '700',
     textAlign: 'center',
     letterSpacing: 0.5,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   outlineButton: {
     backgroundColor: 'transparent',
@@ -156,9 +156,10 @@ const styles = StyleSheet.create({
   },
   outlineText: {
     color: '#667eea',
-    fontWeight: '700',
     textAlign: 'center',
     letterSpacing: 0.5,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   iconContainer: {
     marginRight: 8,

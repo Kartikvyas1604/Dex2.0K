@@ -4,6 +4,7 @@ import { Icon } from 'react-native-elements';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
+import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 
 const { width } = Dimensions.get('window');
 
@@ -11,13 +12,7 @@ export const HomeScreen: React.FC = () => {
   const portfolioValue = '$12,450.67';
   const dailyChange = '+$234.12';
   const dailyChangePercent = '+1.92%';
-
-  const quickActions = [
-    { title: 'Create Token', icon: 'add-circle' },
-    { title: 'Create Pool', icon: 'water' },
-    { title: 'Swap Tokens', icon: 'swap-horiz' },
-    { title: 'Add Liquidity', icon: 'opacity' },
-  ];
+  const isPositive = dailyChange.startsWith('+');
 
   const recentTokens = [
     { name: 'RWA Token', symbol: 'RWA', price: '$1.25', change: '+5.2%', volume: '$2.4M', liquidity: '$156K' },
@@ -36,49 +31,35 @@ export const HomeScreen: React.FC = () => {
     <View style={styles.container}>
       <Header title="Dex2.0K" subtitle="Token-2022 AMM Platform" />
       
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Portfolio Overview */}
-        <Card variant="elevated" style={styles.portfolioCard}>
-          <View style={styles.portfolioContainer}>
+        <View style={styles.portfolioCard}>
+          <View style={[
+            styles.portfolioContainer,
+            isPositive ? styles.positiveBackground : styles.negativeBackground
+          ]}>
             <Text style={styles.portfolioLabel}>Portfolio Value</Text>
             <Text style={styles.portfolioValue}>{portfolioValue}</Text>
             <View style={styles.changeContainer}>
-              <Text style={styles.dailyChange}>{dailyChange}</Text>
-              <Text style={styles.dailyChangePercent}>({dailyChangePercent})</Text>
-            </View>
-            <View style={styles.portfolioStats}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>24H</Text>
-                <Text style={styles.statLabel}>Volume</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>7D</Text>
-                <Text style={styles.statLabel}>Change</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>30D</Text>
-                <Text style={styles.statLabel}>Growth</Text>
-              </View>
+              <Text style={[
+                styles.dailyChange,
+                isPositive ? styles.positiveChange : styles.negativeChange
+              ]}>
+                {dailyChange}
+              </Text>
+              <Text style={[
+                styles.dailyChangePercent,
+                isPositive ? styles.positiveChange : styles.negativeChange
+              ]}>
+                ({dailyChangePercent})
+              </Text>
             </View>
           </View>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map((action, index) => (
-              <TouchableOpacity key={index} style={styles.actionCardContainer}>
-                <View style={styles.actionCard}>
-                  <Icon name={action.icon} type="material" size={28} color="#fff" style={styles.actionIcon} />
-                  <Text style={styles.actionTitle}>{action.title}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Card>
+        </View>
 
         {/* Recent Tokens */}
         <Card>
@@ -126,19 +107,6 @@ export const HomeScreen: React.FC = () => {
             ))}
           </View>
         </Card>
-
-        {/* Call to Action */}
-        <Card variant="glass" style={styles.ctaCard}>
-          <Text style={styles.ctaTitle}>Ready to Trade?</Text>
-          <Text style={styles.ctaSubtitle}>Start swapping Token-2022 tokens with transfer hooks</Text>
-          <Button
-            title="Start Trading"
-            onPress={() => {}}
-            size="large"
-            style={styles.ctaButton}
-            icon="trending-up"
-          />
-        </Card>
       </ScrollView>
     </View>
   );
@@ -152,75 +120,74 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 120, // Extra padding to account for floating navbar
+  },
   portfolioCard: {
     marginTop: 20,
+    marginHorizontal: 16,
   },
   portfolioContainer: {
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  positiveBackground: {
+    backgroundColor: 'rgba(81, 207, 102, 0.15)', // Green background shade
+  },
+  negativeBackground: {
+    backgroundColor: 'rgba(255, 107, 107, 0.15)', // Red background shade
   },
   portfolioLabel: {
     color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 16,
     marginBottom: 8,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
   portfolioValue: {
     color: '#fff',
     fontSize: 36,
-    fontWeight: 'bold',
     marginBottom: 8,
     letterSpacing: 1,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   changeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
   },
   dailyChange: {
-    color: '#51cf66',
     fontSize: 20,
-    fontWeight: '600',
     marginRight: 4,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   dailyChangePercent: {
-    color: '#51cf66',
     fontSize: 16,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
-  portfolioStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    justifyContent: 'space-around',
+  positiveChange: {
+    color: '#51cf66',
   },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  negativeChange: {
+    color: '#ff6b6b',
   },
   sectionTitle: {
     color: '#fff',
     fontSize: 22,
-    fontWeight: 'bold',
     marginBottom: 16,
     letterSpacing: 0.5,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -231,39 +198,8 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '600',
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  actionCardContainer: {
-    width: (width - 80) / 2,
-    marginBottom: 12,
-  },
-  actionCard: {
-    height: 110,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  actionIcon: {
-    marginBottom: 8,
-  },
-  actionTitle: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   tokenItem: {
     flexDirection: 'row',
@@ -284,12 +220,15 @@ const styles = StyleSheet.create({
   tokenName: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
     marginRight: 8,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   tokenSymbol: {
     color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
   tokenDetails: {
     flexDirection: 'row',
@@ -298,6 +237,8 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.5)',
     fontSize: 12,
     marginRight: 12,
+    fontFamily: FONTS.regular,
+    fontWeight: FONT_WEIGHTS.regular,
   },
   tokenPrice: {
     alignItems: 'flex-end',
@@ -305,18 +246,14 @@ const styles = StyleSheet.create({
   priceText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
     marginBottom: 2,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   changeText: {
     fontSize: 14,
-    fontWeight: '600',
-  },
-  positiveChange: {
-    color: '#51cf66',
-  },
-  negativeChange: {
-    color: '#ff6b6b',
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -336,38 +273,21 @@ const styles = StyleSheet.create({
   statCardValue: {
     color: '#fff',
     fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 4,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   statCardLabel: {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 12,
     marginBottom: 4,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
   },
   statCardChange: {
     color: '#51cf66',
     fontSize: 12,
-    fontWeight: '600',
-  },
-  ctaCard: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  ctaTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  ctaSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 16,
-    marginBottom: 24,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  ctaButton: {
-    width: '80%',
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
 }); 

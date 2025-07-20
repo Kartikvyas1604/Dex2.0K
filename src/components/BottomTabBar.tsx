@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { AppIcon } from './AppIcon';
+import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 
 const { width } = Dimensions.get('window');
 
@@ -18,10 +19,10 @@ interface BottomTabBarProps {
 
 const tabs: TabItem[] = [
   { key: 'home', title: 'Home', icon: 'home', screen: 'Home' },
-  { key: 'swap', title: 'Swap', icon: 'swap-horiz', screen: 'Swap' },
-  { key: 'create', title: 'Create', icon: 'add', screen: 'CreateToken' },
-  { key: 'pools', title: 'Pools', icon: 'water', screen: 'Pools' },
-  { key: 'profile', title: 'Profile', icon: 'person', screen: 'Profile' },
+  { key: 'swap', title: 'Swap', icon: 'swap', screen: 'Swap' },
+  { key: 'create', title: 'Create', icon: 'create', screen: 'CreateToken' },
+  { key: 'pools', title: 'Pools', icon: 'pools', screen: 'Pools' },
+  { key: 'profile', title: 'Profile', icon: 'profile', screen: 'Profile' },
 ];
 
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPress }) => {
@@ -42,9 +43,8 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPres
                 <View style={styles.activeIndicator} />
               )}
               
-              <Icon
-                name={tab.icon}
-                type="material"
+              <AppIcon
+                name={isActive ? `${tab.icon}-selected` : tab.icon}
                 size={24}
                 color={isActive ? '#fff' : '#666'}
                 style={styles.tabIcon}
@@ -111,11 +111,13 @@ const styles = StyleSheet.create({
   tabTitle: {
     fontSize: 11,
     color: '#666',
-    fontWeight: '600',
     letterSpacing: 0.3,
+    fontFamily: FONTS.semiBold,
+    fontWeight: FONT_WEIGHTS.semiBold,
   },
   activeTabTitle: {
     color: '#fff',
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
 }); 

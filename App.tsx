@@ -2,13 +2,20 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet, SafeAreaView, Text } from 'react-native';
 import { Icon } from 'react-native-elements';
+import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { CreateTokenScreen } from './src/screens/CreateTokenScreen';
 import { SwapScreen } from './src/screens/SwapScreen';
 import { BottomTabBar } from './src/components/BottomTabBar';
 
 export default function App() {
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+
+  const handleConnectWallet = () => {
+    // Simulate wallet connection
+    setIsWalletConnected(true);
+  };
 
   const renderScreen = () => {
     switch (activeTab) {
@@ -21,7 +28,7 @@ export default function App() {
       case 'pools':
         return (
           <View style={styles.placeholderContainer}>
-            <View style={[styles.placeholderGradient, { backgroundColor: '#667eea' }]}>
+            <View style={styles.placeholderCard}>
               <Icon name="water" type="material" size={64} color="#fff" style={styles.placeholderIcon} />
               <Text style={styles.placeholderTitle}>Liquidity Pools</Text>
               <Text style={styles.placeholderSubtitle}>Coming Soon</Text>
@@ -31,7 +38,7 @@ export default function App() {
       case 'profile':
         return (
           <View style={styles.placeholderContainer}>
-            <View style={[styles.placeholderGradient, { backgroundColor: '#f093fb' }]}>
+            <View style={styles.placeholderCard}>
               <Icon name="person" type="material" size={64} color="#fff" style={styles.placeholderIcon} />
               <Text style={styles.placeholderTitle}>Profile</Text>
               <Text style={styles.placeholderSubtitle}>Coming Soon</Text>
@@ -42,6 +49,15 @@ export default function App() {
         return <HomeScreen />;
     }
   };
+
+  if (!isWalletConnected) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="light" />
+        <WelcomeScreen onConnectWallet={handleConnectWallet} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -68,12 +84,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  placeholderGradient: {
+  placeholderCard: {
     width: '100%',
     height: 300,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,

@@ -45,8 +45,8 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPres
               <Icon
                 name={tab.icon}
                 type="material"
-                size={22}
-                color={isActive ? '#fff' : 'rgba(255, 255, 255, 0.6)'}
+                size={24}
+                color={isActive ? '#fff' : '#666'}
                 style={styles.tabIcon}
               />
               
@@ -78,14 +78,14 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingVertical: 16,
     paddingHorizontal: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: '#000',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   tabItem: {
     flex: 1,
@@ -102,15 +102,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderRadius: 20,
-    backgroundColor: '#667eea',
-    opacity: 0.15,
+    backgroundColor: '#fff',
+    opacity: 0.1,
   },
   tabIcon: {
     marginBottom: 6,
   },
   tabTitle: {
     fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: '#666',
     fontWeight: '600',
     letterSpacing: 0.3,
   },

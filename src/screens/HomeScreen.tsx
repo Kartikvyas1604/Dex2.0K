@@ -13,10 +13,10 @@ export const HomeScreen: React.FC = () => {
   const dailyChangePercent = '+1.92%';
 
   const quickActions = [
-    { title: 'Create Token', icon: 'add-circle', color: '#667eea' },
-    { title: 'Create Pool', icon: 'water', color: '#f093fb' },
-    { title: 'Swap Tokens', icon: 'swap-horiz', color: '#4facfe' },
-    { title: 'Add Liquidity', icon: 'opacity', color: '#43e97b' },
+    { title: 'Create Token', icon: 'add-circle' },
+    { title: 'Create Pool', icon: 'water' },
+    { title: 'Swap Tokens', icon: 'swap-horiz' },
+    { title: 'Add Liquidity', icon: 'opacity' },
   ];
 
   const recentTokens = [
@@ -39,7 +39,7 @@ export const HomeScreen: React.FC = () => {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Portfolio Overview */}
         <Card variant="elevated" style={styles.portfolioCard}>
-          <View style={styles.portfolioGradient}>
+          <View style={styles.portfolioContainer}>
             <Text style={styles.portfolioLabel}>Portfolio Value</Text>
             <Text style={styles.portfolioValue}>{portfolioValue}</Text>
             <View style={styles.changeContainer}>
@@ -71,7 +71,7 @@ export const HomeScreen: React.FC = () => {
           <View style={styles.quickActionsGrid}>
             {quickActions.map((action, index) => (
               <TouchableOpacity key={index} style={styles.actionCardContainer}>
-                <View style={[styles.actionCard, { backgroundColor: action.color }]}>
+                <View style={styles.actionCard}>
                   <Icon name={action.icon} type="material" size={28} color="#fff" style={styles.actionIcon} />
                   <Text style={styles.actionTitle}>{action.title}</Text>
                 </View>
@@ -155,11 +155,13 @@ const styles = StyleSheet.create({
   portfolioCard: {
     marginTop: 20,
   },
-  portfolioGradient: {
+  portfolioContainer: {
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
-    backgroundColor: '#667eea',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   portfolioLabel: {
     color: 'rgba(255, 255, 255, 0.8)',
@@ -227,7 +229,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   viewAllText: {
-    color: '#667eea',
+    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -245,9 +247,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 6,
   },
@@ -325,9 +330,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   statCardValue: {
-    color: '#667eea',
+    color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,

@@ -73,15 +73,6 @@ export const ProfileScreen: React.FC = () => {
       onToggle: setBiometricEnabled,
     },
     {
-      id: 'appearance',
-      title: 'Dark Mode',
-      subtitle: 'Toggle dark theme',
-      icon: 'dark-mode',
-      action: 'toggle' as const,
-      value: darkModeEnabled,
-      onToggle: setDarkModeEnabled,
-    },
-    {
       id: 'language',
       title: 'Language',
       subtitle: 'English (US)',
@@ -157,6 +148,25 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.walletBalance}>
             <Text style={styles.balanceLabel}>Wallet Balance</Text>
             <Text style={styles.balanceValue}>{walletInfo.balance}</Text>
+          </View>
+        </Card>
+
+        {/* Recent Transactions Card */}
+        <Card style={{ marginTop: 16 }}>
+          <Text style={{ color: '#fff', fontSize: 18, fontFamily: FONTS.bold, fontWeight: FONT_WEIGHTS.bold, marginBottom: 12 }}>Recent Transactions</Text>
+          <View style={{ gap: 12 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontFamily: FONTS.semiBold }}>+ 500 BONK</Text>
+              <Text style={{ color: '#51cf66', fontSize: 14, fontFamily: FONTS.medium }}>Received</Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontFamily: FONTS.semiBold }}>- 0.5 SOL</Text>
+              <Text style={{ color: '#ff6b6b', fontSize: 14, fontFamily: FONTS.medium }}>Sent</Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: 16, fontFamily: FONTS.semiBold }}>+ 100 JUP</Text>
+              <Text style={{ color: '#51cf66', fontSize: 14, fontFamily: FONTS.medium }}>Received</Text>
+            </View>
           </View>
         </Card>
 

@@ -6,6 +6,7 @@ import { Button } from '../components/Button';
 import { AppIcon } from '../components/AppIcon';
 import { TokenLogo } from '../components/TokenLogo';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
+import { CustomKeyboard } from '../components/CustomKeyboard';
 
 const { width } = Dimensions.get('window');
 
@@ -58,6 +59,7 @@ export const SwapScreen: React.FC = () => {
 
   const [showTokenSelector, setShowTokenSelector] = useState<'from' | 'to' | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState<'from' | 'to' | null>(null);
 
   const popularTokens: Token[] = [
     {
@@ -175,6 +177,30 @@ export const SwapScreen: React.FC = () => {
     );
   };
 
+  const handleAmountInputPress = (type: 'from' | 'to') => {
+    setKeyboardVisible(type);
+  };
+
+  const handleKeyboardChange = (val: string) => {
+    if (keyboardVisible === 'from') {
+      handleFromAmountChange(val);
+    } else if (keyboardVisible === 'to') {
+      handleToAmountChange(val);
+    }
+  };
+
+  const handleKeyboardMax = () => {
+    if (keyboardVisible === 'from') {
+      handleFromAmountChange(swapState.fromToken.balance.toString());
+    } else if (keyboardVisible === 'to') {
+      handleToAmountChange(swapState.toToken.balance.toString());
+    }
+  };
+
+  const handleKeyboardDone = () => {
+    setKeyboardVisible(null);
+  };
+
   const renderTokenSelector = () => (
     <View style={styles.tokenSelectorOverlay}>
       <View style={styles.tokenSelectorModal}>
@@ -220,7 +246,6 @@ export const SwapScreen: React.FC = () => {
             Balance: {swapState.fromToken.balance.toLocaleString()} {swapState.fromToken.symbol}
           </Text>
         </View>
-        
         <View style={styles.tokenInputRow}>
           <TouchableOpacity 
             style={styles.tokenSelector}
@@ -230,28 +255,20 @@ export const SwapScreen: React.FC = () => {
             <Text style={styles.tokenSymbol}>{swapState.fromToken.symbol}</Text>
             <AppIcon name="chevron-down" size={16} color="rgba(255, 255, 255, 0.6)" />
           </TouchableOpacity>
-          
-          <View style={styles.amountInput}>
-            <TextInput
-              style={styles.amountTextInput}
-              placeholder="0.0"
-              placeholderTextColor="rgba(255, 255, 255, 0.4)"
-              value={swapState.fromAmount}
-              onChangeText={handleFromAmountChange}
-              keyboardType="numeric"
-            />
+          <TouchableOpacity style={styles.amountInput} onPress={() => handleAmountInputPress('from')} activeOpacity={0.8}>
+            <Text style={styles.amountTextInput}>
+              {swapState.fromAmount || <Text style={{ color: 'rgba(255,255,255,0.4)', fontFamily: FONTS.bold, fontWeight: FONT_WEIGHTS.bold }}>0.0</Text>}
+            </Text>
             <Text style={styles.usdValue}>
               ${swapState.fromAmount ? (parseFloat(swapState.fromAmount) * swapState.fromToken.price).toFixed(2) : '0.00'}
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
-
       {/* Swap Button */}
       <TouchableOpacity style={styles.swapButton} onPress={handleSwapTokens}>
         <AppIcon name="swap" size={20} color="#fff" />
       </TouchableOpacity>
-
       {/* To Token */}
       <View style={styles.tokenInputContainer}>
         <View style={styles.tokenInputHeader}>
@@ -260,7 +277,6 @@ export const SwapScreen: React.FC = () => {
             Balance: {swapState.toToken.balance.toLocaleString()} {swapState.toToken.symbol}
           </Text>
         </View>
-        
         <View style={styles.tokenInputRow}>
           <TouchableOpacity 
             style={styles.tokenSelector}
@@ -270,20 +286,14 @@ export const SwapScreen: React.FC = () => {
             <Text style={styles.tokenSymbol}>{swapState.toToken.symbol}</Text>
             <AppIcon name="chevron-down" size={16} color="rgba(255, 255, 255, 0.6)" />
           </TouchableOpacity>
-          
-          <View style={styles.amountInput}>
-            <TextInput
-              style={styles.amountTextInput}
-              placeholder="0.0"
-              placeholderTextColor="rgba(255, 255, 255, 0.4)"
-              value={swapState.toAmount}
-              onChangeText={handleToAmountChange}
-              keyboardType="numeric"
-            />
+          <TouchableOpacity style={styles.amountInput} onPress={() => handleAmountInputPress('to')} activeOpacity={0.8}>
+            <Text style={styles.amountTextInput}>
+              {swapState.toAmount || <Text style={{ color: 'rgba(255,255,255,0.4)', fontFamily: FONTS.bold, fontWeight: FONT_WEIGHTS.bold }}>0.0</Text>}
+            </Text>
             <Text style={styles.usdValue}>
               ${swapState.toAmount ? (parseFloat(swapState.toAmount) * swapState.toToken.price).toFixed(2) : '0.00'}
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </Card>
@@ -373,6 +383,19 @@ export const SwapScreen: React.FC = () => {
       </ScrollView>
 
       {showTokenSelector && renderTokenSelector()}
+      {/* Custom Keyboard Modal */}
+      {keyboardVisible && (
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 100 }}>
+          <CustomKeyboard
+            value={keyboardVisible === 'from' ? swapState.fromAmount : swapState.toAmount}
+            onChange={handleKeyboardChange}
+            onMax={handleKeyboardMax}
+            onDone={handleKeyboardDone}
+            showMax={true}
+            showDone={true}
+          />
+        </View>
+      )}
     </View>
   );
 };

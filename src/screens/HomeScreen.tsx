@@ -187,6 +187,23 @@ export const HomeScreen: React.FC = () => {
     volumeChange: '+12.8%'
   };
 
+  // Filtering logic for tokens
+  const getFilteredTokens = () => {
+    switch (selectedFilter) {
+      case 'gainers':
+        return trendingTokens.filter(t => parseFloat(t.priceChangePercent24h) > 0).sort((a, b) => parseFloat(b.priceChangePercent24h) - parseFloat(a.priceChangePercent24h));
+      case 'losers':
+        return trendingTokens.filter(t => parseFloat(t.priceChangePercent24h) < 0).sort((a, b) => parseFloat(a.priceChangePercent24h) - parseFloat(b.priceChangePercent24h));
+      case 'volume':
+        return trendingTokens.slice().sort((a, b) => parseFloat(b.volume24h.replace(/[$,]/g, '')) - parseFloat(a.volume24h.replace(/[$,]/g, '')));
+      case 'liquidity':
+        return trendingTokens.slice().sort((a, b) => parseFloat(b.liquidity.replace(/[$,]/g, '')) - parseFloat(a.liquidity.replace(/[$,]/g, '')));
+      case 'trending':
+      default:
+        return trendingTokens;
+    }
+  };
+
   const renderTokenItem = ({ item }: { item: TokenData }) => {
     const isPositive = item.priceChangePercent24h.startsWith('+');
     
@@ -255,25 +272,6 @@ export const HomeScreen: React.FC = () => {
               <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, fontFamily: FONTS.medium, fontWeight: FONT_WEIGHTS.medium }}>Solana Mainnet</Text>
             </View>
             <AppIcon name="wallet" size={32} color="#fff" />
-          </View>
-        </Card>
-
-        {/* Recent Transactions Card */}
-        <Card style={{ marginTop: 16, marginHorizontal: 16 }}>
-          <Text style={{ color: '#fff', fontSize: 18, fontFamily: FONTS.bold, fontWeight: FONT_WEIGHTS.bold, marginBottom: 12 }}>Recent Transactions</Text>
-          <View style={{ gap: 12 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ color: '#fff', fontSize: 16, fontFamily: FONTS.semiBold }}>+ 500 BONK</Text>
-              <Text style={{ color: '#51cf66', fontSize: 14, fontFamily: FONTS.medium }}>Received</Text>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ color: '#fff', fontSize: 16, fontFamily: FONTS.semiBold }}>- 0.5 SOL</Text>
-              <Text style={{ color: '#ff6b6b', fontSize: 14, fontFamily: FONTS.medium }}>Sent</Text>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ color: '#fff', fontSize: 16, fontFamily: FONTS.semiBold }}>+ 100 JUP</Text>
-              <Text style={{ color: '#51cf66', fontSize: 14, fontFamily: FONTS.medium }}>Received</Text>
-            </View>
           </View>
         </Card>
 
@@ -366,7 +364,7 @@ export const HomeScreen: React.FC = () => {
           </View>
           
           <FlatList
-            data={trendingTokens}
+            data={getFilteredTokens()}
             renderItem={renderTokenItem}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}

@@ -7,6 +7,7 @@ import { AppIcon } from '../components/AppIcon';
 import { TokenLogo } from '../components/TokenLogo';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 import { CustomKeyboard } from '../components/CustomKeyboard';
+import { useEffect } from 'react';
 
 const { width } = Dimensions.get('window');
 
@@ -200,6 +201,30 @@ export const SwapScreen: React.FC = () => {
   const handleKeyboardDone = () => {
     setKeyboardVisible(null);
   };
+
+  useEffect(() => {
+    const fetchJupiterQuote = async () => {
+      if (!swapState.fromAmount || isNaN(Number(swapState.fromAmount))) return;
+      try {
+        // Jupiter API expects amount in smallest units (lamports, decimals)
+        const inputMint = swapState.fromToken.address;
+        const outputMint = swapState.toToken.address;
+        const amount = Math.floor(Number(swapState.fromAmount) * Math.pow(10, 9)); // assuming 9 decimals
+        const url = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=100`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data && data.data && data.data.length > 0) {
+          console.log('Best Jupiter quote:', data.data[0]);
+        } else {
+          console.log('No quote found');
+        }
+      } catch (e) {
+        console.error('Jupiter API quote error:', e);
+      }
+    };
+    fetchJupiterQuote();
+    // Only refetch when fromAmount, fromToken, or toToken changes
+  }, [swapState.fromAmount, swapState.fromToken, swapState.toToken]);
 
   const renderTokenSelector = () => (
     <View style={styles.tokenSelectorOverlay}>

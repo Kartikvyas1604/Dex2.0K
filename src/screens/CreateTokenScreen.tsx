@@ -65,6 +65,8 @@ export const CreateTokenScreen: React.FC = () => {
     fee: '0.3%',
   });
 
+  const [hookWarning, setHookWarning] = useState('');
+
   const steps = [
     { id: 1, title: 'Token Details', icon: 'token' },
     { id: 2, title: 'Transfer Hook', icon: 'hook' },
@@ -279,9 +281,19 @@ export const CreateTokenScreen: React.FC = () => {
                 placeholder="Enter custom hook program ID (optional)"
                 placeholderTextColor="rgba(255, 255, 255, 0.4)"
                 value={tokenConfig.transferHook.hookProgramId}
-                onChangeText={(value) => updateTransferHook('hookProgramId', value)}
+                onChangeText={(value) => {
+                  updateTransferHook('hookProgramId', value);
+                  if (value && !isHookWhitelisted(value)) {
+                    setHookWarning('This hook program is not whitelisted!');
+                  } else {
+                    setHookWarning('');
+                  }
+                }}
               />
-                </View>
+              {hookWarning ? (
+                <Text style={{ color: '#ff6b6b', marginTop: 4 }}>{hookWarning}</Text>
+              ) : null}
+            </View>
             </>
           )}
         </Card>
@@ -520,8 +532,21 @@ export const CreateTokenScreen: React.FC = () => {
     }
   };
 
+  const isHookWhitelisted = (hookId: string) => {
+    if (!hookId) return true; // Allow empty (no hook)
+    return HOOK_WHITELIST.includes(hookId);
+  };
+
   const handleDeploy = () => {
-    // Handle token deployment
+    // Whitelist enforcement
+    if (tokenConfig.transferHook.enabled && !isHookWhitelisted(tokenConfig.transferHook.hookProgramId)) {
+      setHookWarning('Selected hook program is not whitelisted. Please use a safe, approved hook.');
+      return;
+    }
+    setHookWarning('');
+    // TODO: Blockchain logic to create Token-2022 with Transfer Hook and LP pool
+    // Use Solana web3.js and @solana/spl-token-2022 here
+    // Show success/error feedback
     console.log('Deploying token with config:', tokenConfig);
     console.log('LP config:', lpConfig);
   };

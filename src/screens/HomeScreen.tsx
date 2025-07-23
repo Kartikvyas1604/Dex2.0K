@@ -55,6 +55,7 @@ export const HomeScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('trending');
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
+  const [selectedToken, setSelectedToken] = useState<TokenData | null>(null);
 
   // Mock data for trending tokens
   const trendingTokens: TokenData[] = [
@@ -206,9 +207,8 @@ export const HomeScreen: React.FC = () => {
 
   const renderTokenItem = ({ item }: { item: TokenData }) => {
     const isPositive = item.priceChangePercent24h.startsWith('+');
-    
     return (
-      <TouchableOpacity style={styles.tokenItem}>
+      <TouchableOpacity style={styles.tokenItem} onPress={() => setSelectedToken(item)}>
         <View style={styles.tokenHeader}>
           <View style={styles.tokenInfo}>
             <Text style={styles.tokenName}>{item.name}</Text>
@@ -224,7 +224,6 @@ export const HomeScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-        
         <View style={styles.tokenDetails}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Volume 24h</Text>
@@ -239,20 +238,22 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.detailValue}>{item.marketCap}</Text>
           </View>
         </View>
-        
-        <View style={styles.tokenActions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <AppIcon name="chart" size={16} color="#fff" />
-            <Text style={styles.actionText}>Chart</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <AppIcon name="swap" size={16} color="#fff" />
-            <Text style={styles.actionText}>Trade</Text>
-          </TouchableOpacity>
-        </View>
       </TouchableOpacity>
     );
   };
+
+  if (selectedToken) {
+    // Render the trading chart and details for the selected token
+    return (
+      <View style={styles.container}>
+        <Header title={`${selectedToken.symbol}/USDT`} subtitle="Trading Chart" showBack={true} onBack={() => setSelectedToken(null)} />
+        {/* You can add your chart and trading details here, e.g. TradingViewChart or similar */}
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#fff', fontSize: 18 }}>[Trading chart and details for {selectedToken.name}]</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

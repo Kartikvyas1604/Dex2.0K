@@ -19,8 +19,8 @@ interface BottomTabBarProps {
 
 const tabs: TabItem[] = [
   { key: 'home', title: 'Home', icon: 'home', screen: 'Home' },
-  { key: 'pairs', title: 'Pairs', icon: 'pairs', screen: 'Pools' },
-  { key: 'trading', title: 'Trading', icon: 'chart', screen: 'Trading' },
+  { key: 'pairs', title: 'Pairs', icon: 'pools', screen: 'Pools' },
+  { key: 'trading', title: 'Trading', icon: 'trend-up', screen: 'Trading' },
   { key: 'swap', title: 'Swap', icon: 'swap', screen: 'Swap' },
   { key: 'profile', title: 'Profile', icon: 'profile', screen: 'Profile' },
 ];

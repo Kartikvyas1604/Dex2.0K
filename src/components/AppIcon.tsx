@@ -165,6 +165,10 @@ export const AppIcon: React.FC<AppIconProps> = ({
       'menu': {
         path: 'M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z',
         viewBox: '0 0 24 24'
+      },
+      'trend-up': {
+        path: 'M3 17.25L9 11.25L13 15.25L21 7.25V10.25H23V5.25H18V7.25H20.59L13 14.84L9 10.84L1.5 18.34L3 19.75L9 13.75L13 17.75L21 9.75V12.75H23V5.25H15V7.25H17.59L13 11.84L9 7.84L3 13.75V17.25Z',
+        viewBox: '0 0 30 25'
       }
     };
 

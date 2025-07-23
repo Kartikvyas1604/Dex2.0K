@@ -25,6 +25,11 @@ const tabs: TabItem[] = [
   { key: 'profile', title: 'Profile', icon: 'profile', screen: 'Profile' },
 ];
 
+export const getTabIconByKey = (key: string) => {
+  const tab = tabs.find(t => t.key === key);
+  return tab ? tab.icon : 'help';
+};
+
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPress }) => {
   return (
     <View style={styles.container}>

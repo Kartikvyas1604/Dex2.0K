@@ -286,14 +286,17 @@ export const PoolsScreen: React.FC = () => {
         {/* Trading Pairs */}
         <Card style={styles.pairsCard}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {selectedFilter === 'all' && 'All Trading Pairs'}
-              {selectedFilter === 'trending' && 'Trending Pairs'}
-              {selectedFilter === 'gainers' && 'Top Gainers'}
-              {selectedFilter === 'losers' && 'Top Losers'}
-              {selectedFilter === 'volume' && 'High Volume'}
-              {selectedFilter === 'liquidity' && 'High Liquidity'}
-            </Text>
+            <View style={{flexDirection:'row',alignItems:'center'}}>
+              <AppIcon name="pools" size={20} color="#fff" style={{marginRight:8}} />
+              <Text style={styles.sectionTitle}>
+                {selectedFilter === 'all' && 'All Trading Pairs'}
+                {selectedFilter === 'trending' && 'Trending Pairs'}
+                {selectedFilter === 'gainers' && 'Top Gainers'}
+                {selectedFilter === 'losers' && 'Top Losers'}
+                {selectedFilter === 'volume' && 'High Volume'}
+                {selectedFilter === 'liquidity' && 'High Liquidity'}
+              </Text>
+            </View>
             <TouchableOpacity onPress={() => setInfoModal({visible: true, text: 'Pools (Trading Pairs) are liquidity pools where you can swap between two tokens, provide liquidity, and earn fees.'})}>
               <AppIcon name="info" size={18} color="#667eea" />
             </TouchableOpacity>

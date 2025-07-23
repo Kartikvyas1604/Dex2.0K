@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, Switch, Modal } from 'react-native';
 import { AppIcon } from '../components/AppIcon';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
@@ -24,6 +24,7 @@ export const ProfileScreen: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(true);
+  const [infoModal, setInfoModal] = useState({ visible: false, text: '' });
 
   const walletInfo = {
     address: '0x1234...5678',
@@ -234,6 +235,18 @@ export const ProfileScreen: React.FC = () => {
           />
         </View>
       </ScrollView>
+
+      {/* Info Modal */}
+      <Modal visible={infoModal.visible} transparent animationType="fade">
+        <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.7)',justifyContent:'center',alignItems:'center'}}>
+          <View style={{backgroundColor:'#181818',padding:24,borderRadius:16,maxWidth:320}}>
+            <Text style={{color:'#fff',fontSize:16,marginBottom:12}}>{infoModal.text}</Text>
+            <TouchableOpacity onPress={()=>setInfoModal({visible:false,text:''})} style={{alignSelf:'flex-end',marginTop:8}}>
+              <Text style={{color:'#667eea',fontWeight:'bold'}}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

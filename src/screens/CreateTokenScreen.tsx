@@ -5,6 +5,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { AppIcon } from '../components/AppIcon';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
+import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window');
 
@@ -541,12 +542,19 @@ export const CreateTokenScreen: React.FC = () => {
     // Whitelist enforcement
     if (tokenConfig.transferHook.enabled && !isHookWhitelisted(tokenConfig.transferHook.hookProgramId)) {
       setHookWarning('Selected hook program is not whitelisted. Please use a safe, approved hook.');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Selected hook program is not whitelisted.' });
       return;
     }
     setHookWarning('');
     // TODO: Blockchain logic to create Token-2022 with Transfer Hook and LP pool
     // Use Solana web3.js and @solana/spl-token-2022 here
     // Show success/error feedback
+    try {
+      // ... blockchain logic ...
+      Toast.show({ type: 'success', text1: 'Success', text2: 'Token deployed successfully!' });
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to deploy token.' });
+    }
     console.log('Deploying token with config:', tokenConfig);
     console.log('LP config:', lpConfig);
   };

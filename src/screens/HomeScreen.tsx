@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList, Modal } from 'react-native';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
 import { AppIcon } from '../components/AppIcon';
@@ -56,6 +56,7 @@ export const HomeScreen: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState('trending');
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
   const [selectedToken, setSelectedToken] = useState<TokenData | null>(null);
+  const [infoModal, setInfoModal] = useState<{visible: boolean, text: string}>({visible: false, text: ''});
 
   // Mock data for trending tokens
   const trendingTokens: TokenData[] = [
@@ -359,6 +360,9 @@ export const HomeScreen: React.FC = () => {
               {selectedFilter === 'volume' && 'High Volume'}
               {selectedFilter === 'liquidity' && 'High Liquidity'}
             </Text>
+            <TouchableOpacity onPress={() => setInfoModal({visible: true, text: 'Trending Tokens are the most actively traded tokens on Solana right now, based on volume and price movement.'})}>
+              <AppIcon name="info" size={18} color="#667eea" />
+            </TouchableOpacity>
             <TouchableOpacity>
               <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
@@ -373,6 +377,17 @@ export const HomeScreen: React.FC = () => {
           />
         </Card>
       </ScrollView>
+      {/* Info Modal */}
+      <Modal visible={infoModal.visible} transparent animationType="fade">
+        <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.7)',justifyContent:'center',alignItems:'center'}}>
+          <View style={{backgroundColor:'#181818',padding:24,borderRadius:16,maxWidth:320}}>
+            <Text style={{color:'#fff',fontSize:16,marginBottom:12}}>{infoModal.text}</Text>
+            <TouchableOpacity onPress={()=>setInfoModal({visible:false,text:''})} style={{alignSelf:'flex-end',marginTop:8}}>
+              <Text style={{color:'#667eea',fontWeight:'bold'}}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, Alert, Modal } from 'react-native';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -61,6 +61,7 @@ export const SwapScreen: React.FC = () => {
   const [showTokenSelector, setShowTokenSelector] = useState<'from' | 'to' | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState<'from' | 'to' | null>(null);
+  const [infoModal, setInfoModal] = useState({ visible: false, text: '' });
 
   const popularTokens: Token[] = [
     {
@@ -393,6 +394,13 @@ export const SwapScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Swap Section Header */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Swap Tokens</Text>
+          <TouchableOpacity onPress={() => setInfoModal({visible: true, text: 'Swap lets you exchange one token for another instantly using the best available liquidity pool.'})}>
+            <AppIcon name="info" size={18} color="#667eea" />
+          </TouchableOpacity>
+        </View>
         {renderSwapCard()}
         {renderSwapDetails()}
 
@@ -421,6 +429,17 @@ export const SwapScreen: React.FC = () => {
           />
         </View>
       )}
+      {/* Info Modal */}
+      <Modal visible={infoModal.visible} transparent animationType="fade">
+        <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.7)',justifyContent:'center',alignItems:'center'}}>
+          <View style={{backgroundColor:'#181818',padding:24,borderRadius:16,maxWidth:320}}>
+            <Text style={{color:'#fff',fontSize:16,marginBottom:12}}>{infoModal.text}</Text>
+            <TouchableOpacity onPress={()=>setInfoModal({visible:false,text:''})} style={{alignSelf:'flex-end',marginTop:8}}>
+              <Text style={{color:'#667eea',fontWeight:'bold'}}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -660,5 +679,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 16,
+    marginHorizontal: 16,
+  },
+  sectionTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
   },
 }); 

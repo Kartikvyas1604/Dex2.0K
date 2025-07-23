@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList, Modal } from 'react-native';
 import { AppIcon } from '../components/AppIcon';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
@@ -42,6 +42,7 @@ export const PoolsScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [selectedDex, setSelectedDex] = useState('all');
+  const [infoModal, setInfoModal] = useState({ visible: false, text: '' });
 
   const tradingPairs: TradingPair[] = [
     {
@@ -293,6 +294,9 @@ export const PoolsScreen: React.FC = () => {
               {selectedFilter === 'volume' && 'High Volume'}
               {selectedFilter === 'liquidity' && 'High Liquidity'}
             </Text>
+            <TouchableOpacity onPress={() => setInfoModal({visible: true, text: 'Pools (Trading Pairs) are liquidity pools where you can swap between two tokens, provide liquidity, and earn fees.'})}>
+              <AppIcon name="info" size={18} color="#667eea" />
+            </TouchableOpacity>
             <TouchableOpacity>
               <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
@@ -330,6 +334,18 @@ export const PoolsScreen: React.FC = () => {
           </View>
         </Card>
       </ScrollView>
+
+      {/* Info Modal */}
+      <Modal visible={infoModal.visible} transparent animationType="fade">
+        <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.7)',justifyContent:'center',alignItems:'center'}}>
+          <View style={{backgroundColor:'#181818',padding:24,borderRadius:16,maxWidth:320}}>
+            <Text style={{color:'#fff',fontSize:16,marginBottom:12}}>{infoModal.text}</Text>
+            <TouchableOpacity onPress={()=>setInfoModal({visible:false,text:''})} style={{alignSelf:'flex-end',marginTop:8}}>
+              <Text style={{color:'#667eea',fontWeight:'bold'}}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

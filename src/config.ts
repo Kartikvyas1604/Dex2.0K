@@ -1,0 +1,1 @@
+export const COINMARKETCAP_API_KEY = '8be9a9b5-3232-46a5-8318-7bb312a8ca40'; 

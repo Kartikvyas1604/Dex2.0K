@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList, Modal } from 'react-native';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
 import { AppIcon } from '../components/AppIcon';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
+import { getTokenPrice } from '../utils/coinmarketcap';
+import Loader from '../components/Loader';
 
 const { width } = Dimensions.get('window');
 
@@ -57,6 +59,9 @@ export const HomeScreen: React.FC = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
   const [selectedToken, setSelectedToken] = useState<TokenData | null>(null);
   const [infoModal, setInfoModal] = useState<{visible: boolean, text: string}>({visible: false, text: ''});
+  const [loadingPrices, setLoadingPrices] = useState(false);
+  const [priceError, setPriceError] = useState('');
+  const [tokenPrices, setTokenPrices] = useState<{[symbol:string]:number}>({});
 
   // Mock data for trending tokens
   const trendingTokens: TokenData[] = [
@@ -164,6 +169,27 @@ export const HomeScreen: React.FC = () => {
     }
   ];
 
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchAllPrices() {
+      setLoadingPrices(true);
+      setPriceError('');
+      try {
+        const prices: {[symbol:string]:number} = {};
+        for (const token of trendingTokens) {
+          prices[token.symbol] = await getTokenPrice(token.symbol);
+        }
+        if (isMounted) setTokenPrices(prices);
+      } catch (e) {
+        setPriceError('Failed to fetch prices');
+      } finally {
+        setLoadingPrices(false);
+      }
+    }
+    fetchAllPrices();
+    return () => { isMounted = false; };
+  }, [trendingTokens.map(t=>t.symbol).join(',')]);
+
   const filters = [
     { key: 'trending', label: 'Trending' },
     { key: 'gainers', label: 'Top Gainers' },
@@ -216,7 +242,7 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.tokenSymbol}>{item.symbol}</Text>
           </View>
           <View style={styles.priceInfo}>
-            <Text style={styles.tokenPrice}>{item.price}</Text>
+            <Text style={styles.tokenPrice}>{tokenPrices[item.symbol] || item.price}</Text>
             <Text style={[
               styles.priceChange,
               isPositive ? styles.positiveChange : styles.negativeChange
@@ -258,7 +284,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="DEX Screener" subtitle="Solana Token-2022 Analytics" />
+      <Header title="DEX Screener" />
       
       <ScrollView 
         style={styles.scrollView} 
@@ -368,6 +394,9 @@ export const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
           
+          {loadingPrices ? <Loader size={32} /> : null}
+          {priceError ? <Text style={{color:'#ff6b6b',textAlign:'center'}}>{priceError}</Text> : null}
+
           <FlatList
             data={getFilteredTokens()}
             renderItem={renderTokenItem}

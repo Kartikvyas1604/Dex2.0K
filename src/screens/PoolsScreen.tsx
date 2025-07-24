@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList, Modal } from 'react-native';
 import { AppIcon } from '../components/AppIcon';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
 import { TokenLogo } from '../components/TokenLogo';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
+import { getTokenPrice } from '../utils/coinmarketcap';
+import Loader from '../components/Loader';
 
 const { width } = Dimensions.get('window');
 
@@ -136,6 +138,32 @@ export const PoolsScreen: React.FC = () => {
     }
   ]);
 
+  const [loadingPrices, setLoadingPrices] = useState(false);
+  const [priceError, setPriceError] = useState('');
+  const [tokenPrices, setTokenPrices] = useState<{[symbol:string]:number}>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchAllPrices() {
+      setLoadingPrices(true);
+      setPriceError('');
+      try {
+        const prices: {[symbol:string]:number} = {};
+        for (const pair of pairs) {
+          prices[pair.token0.symbol] = await getTokenPrice(pair.token0.symbol);
+          prices[pair.token1.symbol] = await getTokenPrice(pair.token1.symbol);
+        }
+        if (isMounted) setTokenPrices(prices);
+      } catch (e) {
+        setPriceError('Failed to fetch prices');
+      } finally {
+        setLoadingPrices(false);
+      }
+    }
+    fetchAllPrices();
+    return () => { isMounted = false; };
+  }, [pairs.map(p=>p.token0.symbol + p.token1.symbol).join(',')]);
+
   const filters = [
     { key: 'all', label: 'All Pairs' },
     { key: 'trending', label: 'Trending' },
@@ -216,7 +244,7 @@ export const PoolsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Trading Pairs" subtitle="Solana Token-2022 Pairs" />
+      <Header title="Trading Pairs" />
       
       <ScrollView 
         style={styles.scrollView} 
@@ -264,6 +292,8 @@ export const PoolsScreen: React.FC = () => {
             </View>
           </View>
           
+          {priceError ? <Text style={{color:'#ff6b6b',textAlign:'center'}}>{priceError}</Text> : null}
+
           <FlatList
             data={pairs}
             renderItem={renderPairItem}

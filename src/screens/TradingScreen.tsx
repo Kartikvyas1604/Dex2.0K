@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, Modal, TextInput, Alert } from 'react-native';
 import { Header } from '../components/Header';
 import { Card } from '../components/Card';
@@ -7,6 +7,8 @@ import { TokenLogo } from '../components/TokenLogo';
 import { TradingViewChart } from '../components/TradingViewChart';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 import { AppIcon } from '../components/AppIcon';
+import { getTokenPrice } from '../utils/coinmarketcap';
+import Loader from '../components/Loader';
 
 const { width } = Dimensions.get('window');
 
@@ -31,6 +33,9 @@ export const TradingScreen: React.FC = () => {
   const [orderPrice, setOrderPrice] = useState('');
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [loadingPrices, setLoadingPrices] = useState(false);
+  const [priceError, setPriceError] = useState('');
+  const [tokenDetails, setTokenDetails] = useState<{[symbol:string]:{price:number, volume:number, marketCap:number}} >({});
 
   const recentTokens: Token[] = [
     {
@@ -105,6 +110,43 @@ export const TradingScreen: React.FC = () => {
     { value: '1W', label: '1w' },
   ];
 
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchAllDetails() {
+      setPriceError('');
+      try {
+        const details: {[symbol:string]:{price:number, volume:number, marketCap:number}} = {};
+        const results = await Promise.all(recentTokens.map(async (token) => {
+          try {
+            const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${token.symbol}`;
+            const res = await fetch(url, {
+              headers: {
+                'X-CMC_PRO_API_KEY': require('../config').COINMARKETCAP_API_KEY,
+              },
+            });
+            const data = await res.json();
+            if (data.status && data.status.error_code === 0) {
+              const d = data.data[token.symbol].quote.USD;
+              return { symbol: token.symbol, price: d.price, volume: d.volume_24h, marketCap: d.market_cap };
+            }
+          } catch {}
+          return { symbol: token.symbol, price: null, volume: null, marketCap: null };
+        }));
+        results.forEach(({symbol, price, volume, marketCap}) => {
+          if (price !== null) details[symbol] = { price, volume, marketCap };
+        });
+        if (isMounted) setTokenDetails(details);
+        if (results.every(r => r.price === null)) {
+          setPriceError('Failed to fetch token data');
+        }
+      } catch (e) {
+        setPriceError('Failed to fetch token data');
+      }
+    }
+    fetchAllDetails();
+    return () => { isMounted = false; };
+  }, [recentTokens.map(t=>t.symbol).join(',')]);
+
   const handleTokenSelect = (token: Token) => {
     setSelectedToken(token);
   };
@@ -173,7 +215,7 @@ export const TradingScreen: React.FC = () => {
           </View>
         </View>
         <View style={styles.tokenPrice}>
-          <Text style={styles.priceText}>{token.price}</Text>
+          <Text style={styles.priceText}>{tokenDetails[token.symbol]?.price || token.price}</Text>
           <Text style={[
             styles.changeText,
             { color: token.isPositive ? '#51cf66' : '#ff6b6b' }
@@ -185,11 +227,11 @@ export const TradingScreen: React.FC = () => {
       <View style={styles.tokenStats}>
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Volume 24h</Text>
-          <Text style={styles.statValue}>{token.volume24h}</Text>
+          <Text style={styles.statValue}>{tokenDetails[token.symbol]?.volume || token.volume24h}</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Market Cap</Text>
-          <Text style={styles.statValue}>{token.marketCap}</Text>
+          <Text style={styles.statValue}>{tokenDetails[token.symbol]?.marketCap || token.marketCap}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -452,6 +494,7 @@ export const TradingScreen: React.FC = () => {
 
         <Card style={styles.tokensCard}>
           <Text style={styles.tokensTitle}>Recent Launched Tokens</Text>
+          {priceError ? <Text style={{color:'#ff6b6b',textAlign:'center'}}>{priceError}</Text> : null}
           {recentTokens.map((token) => (
             <TokenCard key={token.id} token={token} />
           ))}

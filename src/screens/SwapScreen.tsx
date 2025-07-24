@@ -8,6 +8,8 @@ import { TokenLogo } from '../components/TokenLogo';
 import { FONTS, FONT_WEIGHTS } from '../utils/fonts';
 import { CustomKeyboard } from '../components/CustomKeyboard';
 import { useEffect } from 'react';
+import { getTokenPrice } from '../utils/coinmarketcap';
+import Loader from '../components/Loader';
 
 const { width } = Dimensions.get('window');
 
@@ -62,6 +64,8 @@ export const SwapScreen: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState<'from' | 'to' | null>(null);
   const [infoModal, setInfoModal] = useState({ visible: false, text: '' });
+  const [loadingPrice, setLoadingPrice] = useState(false);
+  const [priceError, setPriceError] = useState('');
 
   const popularTokens: Token[] = [
     {
@@ -101,6 +105,18 @@ export const SwapScreen: React.FC = () => {
       balance: 200,
     },
   ];
+
+  // Mock whitelist of Token-2022 addresses with whitelisted hooks
+  const TOKEN2022_WHITELIST = [
+    'So11111111111111111111111111111111111111112', // SOL
+    'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263', // BONK
+    'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', // JUP
+    '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R', // RAY
+  ];
+
+  const isToken2022Whitelisted = (token: Token) => TOKEN2022_WHITELIST.includes(token.address);
+
+  const eligibleTokens = popularTokens.filter(isToken2022Whitelisted);
 
   const slippageOptions = [0.1, 0.5, 1.0, 2.0];
 
@@ -203,29 +219,31 @@ export const SwapScreen: React.FC = () => {
     setKeyboardVisible(null);
   };
 
+  // Fetch price for fromToken and toToken
   useEffect(() => {
-    const fetchJupiterQuote = async () => {
-      if (!swapState.fromAmount || isNaN(Number(swapState.fromAmount))) return;
+    let isMounted = true;
+    async function fetchPrices() {
+      setLoadingPrice(true);
+      setPriceError('');
       try {
-        // Jupiter API expects amount in smallest units (lamports, decimals)
-        const inputMint = swapState.fromToken.address;
-        const outputMint = swapState.toToken.address;
-        const amount = Math.floor(Number(swapState.fromAmount) * Math.pow(10, 9)); // assuming 9 decimals
-        const url = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=100`;
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data && data.data && data.data.length > 0) {
-          console.log('Best Jupiter quote:', data.data[0]);
-        } else {
-          console.log('No quote found');
+        const fromPrice = await getTokenPrice(swapState.fromToken.symbol);
+        const toPrice = await getTokenPrice(swapState.toToken.symbol);
+        if (isMounted) {
+          setSwapState(prev => ({
+            ...prev,
+            fromToken: { ...prev.fromToken, price: fromPrice },
+            toToken: { ...prev.toToken, price: toPrice },
+          }));
         }
       } catch (e) {
-        console.error('Jupiter API quote error:', e);
+        setPriceError('Failed to fetch price');
+      } finally {
+        setLoadingPrice(false);
       }
-    };
-    fetchJupiterQuote();
-    // Only refetch when fromAmount, fromToken, or toToken changes
-  }, [swapState.fromAmount, swapState.fromToken, swapState.toToken]);
+    }
+    fetchPrices();
+    return () => { isMounted = false; };
+  }, [swapState.fromToken.symbol, swapState.toToken.symbol]);
 
   const renderTokenSelector = () => (
     <View style={styles.tokenSelectorOverlay}>
@@ -238,7 +256,7 @@ export const SwapScreen: React.FC = () => {
         </View>
         
         <ScrollView style={styles.tokenList}>
-          {popularTokens.map((token) => (
+          {eligibleTokens.map((token) => (
             <TouchableOpacity
               key={token.address}
               style={styles.tokenItem}
@@ -322,6 +340,8 @@ export const SwapScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
+      {loadingPrice ? <Loader size={32} /> : null}
+      {priceError ? <Text style={{color:'#ff6b6b',textAlign:'center'}}>{priceError}</Text> : null}
     </Card>
   );
 
@@ -387,7 +407,7 @@ export const SwapScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Swap" subtitle="Trade Token-2022 tokens" />
+      <Header title="Swap" />
       
       <ScrollView 
         style={styles.scrollView} 

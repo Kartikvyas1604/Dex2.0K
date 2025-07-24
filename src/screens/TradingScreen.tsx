@@ -200,7 +200,6 @@ export const TradingScreen: React.FC = () => {
       <View style={styles.container}>
                  <Header 
            title={`${selectedToken.symbol}/USDT`} 
-           subtitle="Trading Chart"
            showBack={true}
            onBack={handleBackToTokens}
          />
@@ -427,13 +426,7 @@ export const TradingScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Instead of passing a ReactNode to title, render the icon and text above Header if Header only accepts string */}
-      <View style={{flexDirection:'row',alignItems:'center',marginTop:50,marginLeft:20,marginBottom:-30}}>
-        <AppIcon name="trend-up" size={20} color="#fff" style={{marginRight:8}} />
-        <Text style={{color:'#fff',fontSize:20,fontFamily:FONTS.bold,fontWeight:FONT_WEIGHTS.bold}}>Trading</Text>
-      </View>
-      <Header title="" subtitle="Recent Launched Tokens" />
-      
+      <Header title="Trading" />
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

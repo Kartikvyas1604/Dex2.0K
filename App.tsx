@@ -16,6 +16,7 @@ import { TokenDetailScreen } from './src/screens/TokenDetailScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { TradingScreen } from './src/screens/TradingScreen';
 import { BottomTabBar } from './src/components/BottomTabBar';
+import { CreatePoolScreen } from './src/screens/CreatePoolScreen';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -41,6 +42,8 @@ export default function App() {
         return <PoolsScreen />;
       case 'create':
         return <CreateTokenScreen />;
+      case 'create-pool':
+        return <CreatePoolScreen />;
       case 'analytics':
         return <AnalyticsScreen />;
       case 'swap':

@@ -38,13 +38,26 @@ interface TradingPair {
   };
 }
 
+const TOKEN_LIST = [
+  { symbol: 'SOL', name: 'Solana' },
+  { symbol: 'BONK', name: 'Bonk' },
+  { symbol: 'JUP', name: 'Jupiter' },
+  { symbol: 'RAY', name: 'Raydium' },
+  { symbol: 'USDC', name: 'USD Coin' },
+];
+
 export const PoolsScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [selectedDex, setSelectedDex] = useState('all');
   const [infoModal, setInfoModal] = useState({ visible: false, text: '' });
-
-  const tradingPairs: TradingPair[] = [
+  const [showAddPair, setShowAddPair] = useState(false);
+  const [pairTokenA, setPairTokenA] = useState(TOKEN_LIST[0]);
+  const [pairTokenB, setPairTokenB] = useState(TOKEN_LIST[1]);
+  const [pairLiquidity, setPairLiquidity] = useState('');
+  const [showTokenDropdown, setShowTokenDropdown] = useState<'A' | 'B' | null>(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [pairs, setPairs] = useState<TradingPair[]>([
     {
       id: '1',
       token0: { symbol: 'BONK', name: 'Bonk', logo: 'bonk', address: '0x1234...5678' },
@@ -121,7 +134,7 @@ export const PoolsScreen: React.FC = () => {
         h1: { buys: 45, sells: 23 }
       }
     }
-  ];
+  ]);
 
   const filters = [
     { key: 'all', label: 'All Pairs' },
@@ -210,6 +223,11 @@ export const PoolsScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Add Pair Button */}
+        <TouchableOpacity style={styles.addPairButton} onPress={() => setShowAddPair(true)}>
+          <AppIcon name="add" size={20} color="#fff" />
+          <Text style={styles.addPairText}>Add Pair</Text>
+        </TouchableOpacity>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
@@ -229,84 +247,25 @@ export const PoolsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* DEX Filter */}
-        <View style={styles.dexContainer}>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.dexScroll}
-          >
-            {dexes.map((dex) => (
-              <TouchableOpacity
-                key={dex.key}
-                style={[
-                  styles.dexButton,
-                  selectedDex === dex.key && styles.activeDexButton
-                ]}
-                onPress={() => setSelectedDex(dex.key)}
-              >
-                <Text style={[
-                  styles.dexText,
-                  selectedDex === dex.key && styles.activeDexText
-                ]}>
-                  {dex.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Filters */}
-        <View style={styles.filtersContainer}>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filtersScroll}
-          >
-            {filters.map((filter) => (
-              <TouchableOpacity
-                key={filter.key}
-                style={[
-                  styles.filterButton,
-                  selectedFilter === filter.key && styles.activeFilterButton
-                ]}
-                onPress={() => setSelectedFilter(filter.key)}
-              >
-                <Text style={[
-                  styles.filterText,
-                  selectedFilter === filter.key && styles.activeFilterText
-                ]}>
-                  {filter.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
         {/* Trading Pairs */}
         <Card style={styles.pairsCard}>
           <View style={styles.sectionHeader}>
             <View style={{flexDirection:'row',alignItems:'center'}}>
               <AppIcon name="pools" size={20} color="#fff" style={{marginRight:8}} />
-              <Text style={styles.sectionTitle}>
-                {selectedFilter === 'all' && 'All Trading Pairs'}
-                {selectedFilter === 'trending' && 'Trending Pairs'}
-                {selectedFilter === 'gainers' && 'Top Gainers'}
-                {selectedFilter === 'losers' && 'Top Losers'}
-                {selectedFilter === 'volume' && 'High Volume'}
-                {selectedFilter === 'liquidity' && 'High Liquidity'}
-              </Text>
+              <Text style={styles.sectionTitle}>Trading Pairs</Text>
             </View>
-            <TouchableOpacity onPress={() => setInfoModal({visible: true, text: 'Pools (Trading Pairs) are liquidity pools where you can swap between two tokens, provide liquidity, and earn fees.'})}>
-              <AppIcon name="info" size={18} color="#667eea" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
+            <View style={{flexDirection:'row',alignItems:'center',gap:8}}>
+              <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+                <AppIcon name="filter" size={20} color="#667eea" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setInfoModal({visible: true, text: 'Pools (Trading Pairs) are liquidity pools where you can swap between two tokens, provide liquidity, and earn fees.'})}>
+                <AppIcon name="info" size={18} color="#667eea" />
+              </TouchableOpacity>
+            </View>
           </View>
           
           <FlatList
-            data={tradingPairs}
+            data={pairs}
             renderItem={renderPairItem}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}
@@ -338,6 +297,109 @@ export const PoolsScreen: React.FC = () => {
         </Card>
       </ScrollView>
 
+      {/* Add Pair Modal */}
+      <Modal visible={showAddPair} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.addPairModal}>
+            <Text style={styles.modalTitle}>Add New Pair</Text>
+            <Text style={styles.inputLabel}>Token A</Text>
+            <TouchableOpacity style={styles.tokenDropdown} onPress={() => setShowTokenDropdown('A')}>
+              <Text style={styles.tokenDropdownText}>{pairTokenA.symbol}</Text>
+              <AppIcon name="chevron-down" size={16} color="#fff" />
+            </TouchableOpacity>
+            {showTokenDropdown === 'A' && (
+              <FlatList
+                data={TOKEN_LIST.filter(t => t.symbol !== pairTokenB.symbol)}
+                keyExtractor={item => item.symbol}
+                style={styles.dropdownList}
+                renderItem={({item}) => (
+                  <TouchableOpacity style={styles.dropdownItem} onPress={() => { setPairTokenA(item); setShowTokenDropdown(null); }}>
+                    <Text style={styles.dropdownItemText}>{item.symbol} - {item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+            <Text style={styles.inputLabel}>Token B</Text>
+            <TouchableOpacity style={styles.tokenDropdown} onPress={() => setShowTokenDropdown('B')}>
+              <Text style={styles.tokenDropdownText}>{pairTokenB.symbol}</Text>
+              <AppIcon name="chevron-down" size={16} color="#fff" />
+            </TouchableOpacity>
+            {showTokenDropdown === 'B' && (
+              <FlatList
+                data={TOKEN_LIST.filter(t => t.symbol !== pairTokenA.symbol)}
+                keyExtractor={item => item.symbol}
+                style={styles.dropdownList}
+                renderItem={({item}) => (
+                  <TouchableOpacity style={styles.dropdownItem} onPress={() => { setPairTokenB(item); setShowTokenDropdown(null); }}>
+                    <Text style={styles.dropdownItemText}>{item.symbol} - {item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+            <Text style={styles.inputLabel}>Initial Liquidity</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="0.0"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              value={pairLiquidity}
+              onChangeText={setPairLiquidity}
+              keyboardType="numeric"
+            />
+            <TouchableOpacity
+              style={styles.createButton}
+              onPress={() => {
+                setPairs([
+                  ...pairs,
+                  {
+                    id: (pairs.length + 1).toString(),
+                    token0: { symbol: pairTokenA.symbol, name: pairTokenA.name, logo: pairTokenA.symbol.toLowerCase(), address: '' },
+                    token1: { symbol: pairTokenB.symbol, name: pairTokenB.name, logo: pairTokenB.symbol.toLowerCase(), address: '' },
+                    price: '$0.00',
+                    priceChange24h: '+0.00',
+                    priceChangePercent24h: '+0.00%',
+                    volume24h: '$0',
+                    liquidity: pairLiquidity,
+                    marketCap: '$0',
+                    dexId: 'custom',
+                    pairAddress: '',
+                    createdAt: new Date().toISOString(),
+                    txns: { h24: { buys: 0, sells: 0 }, h6: { buys: 0, sells: 0 }, h1: { buys: 0, sells: 0 } },
+                  },
+                ]);
+                setShowAddPair(false);
+                setPairLiquidity('');
+              }}
+              disabled={!pairLiquidity}
+            >
+              <Text style={styles.createButtonText}>Add Pair</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowAddPair(false)} style={{marginTop:12,alignSelf:'center'}}>
+              <Text style={{color:'#667eea'}}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* Filter Modal */}
+      <Modal visible={showFilterModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.filterModal}>
+            <Text style={styles.modalTitle}>Filters</Text>
+            {/* Place filter options here, e.g. checkboxes or toggles for each filter */}
+            {filters.map((filter) => (
+              <TouchableOpacity
+                key={filter.key}
+                style={{paddingVertical:10}}
+                onPress={() => { setSelectedFilter(filter.key); setShowFilterModal(false); }}
+              >
+                <Text style={{color:selectedFilter===filter.key?'#fff':'#aaa',fontSize:16}}>{filter.label}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity onPress={() => setShowFilterModal(false)} style={{marginTop:12,alignSelf:'center'}}>
+              <Text style={{color:'#667eea'}}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       {/* Info Modal */}
       <Modal visible={infoModal.visible} transparent animationType="fade">
         <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.7)',justifyContent:'center',alignItems:'center'}}>
@@ -363,6 +425,26 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
+  },
+  addPairButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(102, 126, 234, 0.2)',
+  },
+  addPairText: {
+    color: '#667eea',
+    fontSize: 16,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+    marginLeft: 8,
   },
   searchContainer: {
     marginTop: 20,
@@ -604,5 +686,106 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: FONTS.medium,
     fontWeight: FONT_WEIGHTS.medium,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  addPairModal: {
+    backgroundColor: '#181818',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
+    marginBottom: 20,
+  },
+  inputLabel: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 16,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  tokenDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    width: '100%',
+    marginBottom: 12,
+  },
+  tokenDropdownText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  dropdownList: {
+    width: '100%',
+    backgroundColor: '#181818',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 12,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  dropdownItemText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  textInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: FONTS.medium,
+    fontWeight: FONT_WEIGHTS.medium,
+    marginBottom: 12,
+  },
+  createButton: {
+    backgroundColor: '#667eea',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    width: '100%',
+  },
+  createButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    fontWeight: FONT_WEIGHTS.bold,
+  },
+  filterModal: {
+    backgroundColor: '#181818',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    alignItems: 'center',
   },
 }); 

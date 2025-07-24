@@ -7,7 +7,6 @@ interface HeaderProps {
   title: string;
   onBack?: () => void;
   showBack?: boolean;
-  subtitle?: string;
 }
 
 const { width } = Dimensions.get('window');
@@ -15,8 +14,7 @@ const { width } = Dimensions.get('window');
 export const Header: React.FC<HeaderProps> = ({ 
   title, 
   onBack, 
-  showBack = false,
-  subtitle
+  showBack = false
 }) => {
   return (
     <View style={styles.container}>
@@ -29,7 +27,6 @@ export const Header: React.FC<HeaderProps> = ({
         
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
         
         <View style={styles.spacer} />
@@ -40,50 +37,50 @@ export const Header: React.FC<HeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    height: 64 + 24, // header height + status bar
+    paddingTop: 24, // status bar padding
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    backgroundColor: '#101014', // solid dark
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 8,
+    justifyContent: 'center',
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    height: 64,
+    paddingHorizontal: 16,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   titleContainer: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
   },
   title: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 24,
     textAlign: 'center',
     fontFamily: FONTS.bold,
     fontWeight: FONT_WEIGHTS.bold,
-  },
-  subtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-    marginTop: 2,
-    fontFamily: FONTS.medium,
-    fontWeight: FONT_WEIGHTS.medium,
+    letterSpacing: 0.5,
   },
   spacer: {
     width: 40,

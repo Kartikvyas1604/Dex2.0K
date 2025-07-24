@@ -33,10 +33,10 @@ export const getTabIconByKey = (key: string) => {
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPress }) => {
   return (
     <View style={styles.container}>
+      {/* FAB removed as per user request */}
       <View style={styles.tabBar}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key;
-          
           return (
             <TouchableOpacity
               key={tab.key}
@@ -47,14 +47,12 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPres
               {isActive && (
                 <View style={styles.activeIndicator} />
               )}
-              
               <AppIcon
                 name={isActive ? `${tab.icon}-selected` : tab.icon}
                 size={22}
                 color={isActive ? '#fff' : '#666'}
                 style={styles.tabIcon}
               />
-              
               <Text style={[
                 styles.tabTitle,
                 isActive && styles.activeTabTitle
@@ -124,5 +122,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: FONTS.bold,
     fontWeight: FONT_WEIGHTS.bold,
+  },
+  fab: {
+    position: 'absolute',
+    left: '50%',
+    bottom: 54,
+    transform: [{ translateX: -32 }],
+    zIndex: 10,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#667eea',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 2,
+    borderColor: '#181818',
   },
 }); 

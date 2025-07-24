@@ -36,7 +36,7 @@ export const TokenLogo: React.FC<TokenLogoProps> = ({
       {
         width: size,
         height: size,
-        borderRadius: size / 2,
+        borderRadius: size / 4, // Rounded square
         backgroundColor: tokenConfig.color,
       },
       style
@@ -45,6 +45,7 @@ export const TokenLogo: React.FC<TokenLogoProps> = ({
         name={tokenConfig.icon}
         size={size * 0.6}
         color="#fff"
+        style={{ alignSelf: 'center' }}
       />
     </View>
   );
